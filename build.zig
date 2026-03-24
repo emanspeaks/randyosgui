@@ -18,29 +18,41 @@ pub fn build(b: *std.Build) void {
     };
 
     // --- Static library ---
-    const lib = b.addStaticLibrary(.{
-        .name   = "randyosgui",
-        .target = target,
-        .optimize = optimize,
+    // System libs are NOT linked here; they're added by each consumer so that
+    // lld doesn't try to bundle .so stubs into the .a archive.
+    const lib_mod = b.createModule(.{
+        .target    = target,
+        .optimize  = optimize,
+        .link_libc = true,
     });
-    lib.addCSourceFiles(.{ .files = lib_sources, .flags = c_flags });
-    lib.addIncludePath(b.path("include"));
-    lib.addIncludePath(b.path("src"));
-    lib.linkLibC();
-    addPlatformLibs(lib, target);
+    lib_mod.addCSourceFiles(.{ .files = lib_sources, .flags = c_flags });
+    lib_mod.addIncludePath(b.path("include"));
+    lib_mod.addIncludePath(b.path("src"));
+
+    const lib = b.addLibrary(.{
+        .name        = "randyosgui",
+        .root_module = lib_mod,
+        .linkage     = .static,
+    });
     b.installArtifact(lib);
 
     // --- Shared library ---
-    const shared = b.addSharedLibrary(.{
-        .name   = "randyosgui",
-        .target = target,
-        .optimize = optimize,
+    // Shared lib IS fully linked, so platform libs go here.
+    const shared_mod = b.createModule(.{
+        .target    = target,
+        .optimize  = optimize,
+        .link_libc = true,
     });
-    shared.addCSourceFiles(.{ .files = lib_sources, .flags = c_flags });
-    shared.addIncludePath(b.path("include"));
-    shared.addIncludePath(b.path("src"));
-    shared.linkLibC();
-    addPlatformLibs(shared, target);
+    shared_mod.addCSourceFiles(.{ .files = lib_sources, .flags = c_flags });
+    shared_mod.addIncludePath(b.path("include"));
+    shared_mod.addIncludePath(b.path("src"));
+    addPlatformLibs(shared_mod, target);
+
+    const shared = b.addLibrary(.{
+        .name        = "randyosgui",
+        .root_module = shared_mod,
+        .linkage     = .dynamic,
+    });
     b.installArtifact(shared);
 
     // Install public header
@@ -50,40 +62,46 @@ pub fn build(b: *std.Build) void {
     buildExample(b, "hello", "examples/hello/main.c", target, optimize, lib);
 
     // --- Tests ---
-    const test_exe = b.addExecutable(.{
-        .name   = "test_randyosgui",
-        .target = target,
-        .optimize = optimize,
+    // Tests use stub platform/renderer so no external libs needed at link time.
+    const test_mod = b.createModule(.{
+        .target    = target,
+        .optimize  = optimize,
+        .link_libc = true,
     });
-    test_exe.addCSourceFiles(.{
+    test_mod.addCSourceFiles(.{
         .files = &.{"tests/test_randyosgui.c"},
         .flags = c_flags,
     });
-    test_exe.addIncludePath(b.path("include"));
-    test_exe.linkLibrary(lib);
+    test_mod.addIncludePath(b.path("include"));
+    test_mod.linkLibrary(lib);
+
+    const test_exe = b.addExecutable(.{
+        .name        = "test_randyosgui",
+        .root_module = test_mod,
+    });
 
     const run_tests = b.addRunArtifact(test_exe);
     const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&run_tests.step);
 }
 
-fn addPlatformLibs(step: *std.Build.Step.Compile, target: std.Build.ResolvedTarget) void {
+fn addPlatformLibs(mod: *std.Build.Module, target: std.Build.ResolvedTarget) void {
     switch (target.result.os.tag) {
         .linux => {
-            step.linkSystemLibrary("glfw");
-            step.linkSystemLibrary("vulkan");
-            step.linkSystemLibrary("freetype");
+            mod.linkSystemLibrary("glfw",     .{});
+            mod.linkSystemLibrary("vulkan",   .{});
+            mod.linkSystemLibrary("freetype", .{});
         },
         .windows => {
-            step.linkSystemLibrary("glfw3");
-            step.linkSystemLibrary("vulkan-1");
-            step.linkSystemLibrary("freetype");
+            mod.linkSystemLibrary("glfw3",    .{});
+            mod.linkSystemLibrary("vulkan-1", .{});
+            mod.linkSystemLibrary("freetype", .{});
         },
         .macos => {
-            step.linkSystemLibrary("glfw");
-            step.linkSystemLibrary("freetype");
-            step.linkFramework("Metal");
-            step.linkFramework("QuartzCore");
+            mod.linkSystemLibrary("glfw",     .{});
+            mod.linkSystemLibrary("freetype", .{});
+            mod.linkFramework("Metal",        .{});
+            mod.linkFramework("QuartzCore",   .{});
         },
         else => {},
     }
@@ -97,17 +115,24 @@ fn buildExample(
     optimize: std.builtin.OptimizeMode,
     lib: *std.Build.Step.Compile,
 ) void {
-    const exe = b.addExecutable(.{
-        .name   = name,
-        .target = target,
-        .optimize = optimize,
+    const mod = b.createModule(.{
+        .target    = target,
+        .optimize  = optimize,
+        .link_libc = true,
     });
-    exe.addCSourceFiles(.{
+    mod.addCSourceFiles(.{
         .files = &.{src},
         .flags = &.{"-std=c11"},
     });
-    exe.addIncludePath(b.path("include"));
-    exe.linkLibrary(lib);
+    mod.addIncludePath(b.path("include"));
+    mod.linkLibrary(lib);
+    // Examples need the platform libs since they run the real main loop
+    addPlatformLibs(mod, target);
+
+    const exe = b.addExecutable(.{
+        .name        = name,
+        .root_module = mod,
+    });
     b.installArtifact(exe);
 
     const run  = b.addRunArtifact(exe);

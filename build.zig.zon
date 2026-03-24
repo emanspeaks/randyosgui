@@ -1,7 +1,8 @@
 .{
     .name = .randyosgui,
+    .fingerprint = 0x85cd48460714309f,
     .version = "0.0.1",
-    .minimum_zig_version = "0.13.0",
+    .minimum_zig_version = "0.15.0",
     .dependencies = .{},
     .paths = .{"."},
 }
