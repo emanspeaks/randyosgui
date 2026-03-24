@@ -20,8 +20,9 @@ RandyosgContext* randyosgui_init(void) {
 
 void randyosgui_shutdown(RandyosgContext* ctx) {
     if (!ctx) return;
-    for (uint32_t i = 0; i < ctx->window_count; i++) {
-        randyosgui_window_destroy(ctx->windows[i]);
+    /* window_destroy unregisters itself, so always destroy index 0 */
+    while (ctx->window_count > 0) {
+        randyosgui_window_destroy(ctx->windows[0]);
     }
     free(ctx->windows);
     free(ctx);
@@ -86,6 +87,17 @@ RandyosgWindow* randyosgui_window_create(RandyosgContext* ctx,
 
 void randyosgui_window_destroy(RandyosgWindow* win) {
     if (!win) return;
+
+    /* Unregister from context so shutdown doesn't double-free */
+    RandyosgContext* ctx = win->ctx;
+    if (ctx) {
+        for (uint32_t i = 0; i < ctx->window_count; i++) {
+            if (ctx->windows[i] == win) {
+                ctx->windows[i] = ctx->windows[--ctx->window_count];
+                break;
+            }
+        }
+    }
 
     Widget* w = win->widgets;
     while (w) {
