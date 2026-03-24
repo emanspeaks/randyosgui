@@ -62,7 +62,6 @@ pub fn build(b: *std.Build) void {
     buildExample(b, "hello", "examples/hello/main.c", target, optimize, lib);
 
     // --- Tests ---
-    // Tests use stub platform/renderer so no external libs needed at link time.
     const test_mod = b.createModule(.{
         .target    = target,
         .optimize  = optimize,
@@ -74,6 +73,7 @@ pub fn build(b: *std.Build) void {
     });
     test_mod.addIncludePath(b.path("include"));
     test_mod.linkLibrary(lib);
+    addPlatformLibs(test_mod, target);
 
     const test_exe = b.addExecutable(.{
         .name        = "test_randyosgui",
@@ -81,7 +81,9 @@ pub fn build(b: *std.Build) void {
     });
 
     const run_tests = b.addRunArtifact(test_exe);
-    const test_step = b.step("test", "Run unit tests");
+    // On headless systems set DISPLAY to a Xvfb instance before running:
+    //   Xvfb :99 -screen 0 1024x768x24 & DISPLAY=:99 zig build test
+    const test_step = b.step("test", "Run unit tests (needs DISPLAY on headless systems)");
     test_step.dependOn(&run_tests.step);
 }
 

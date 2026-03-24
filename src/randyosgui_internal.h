@@ -90,6 +90,14 @@ void            platform_window_set_title(PlatformWindow* win, const char* title
 void            platform_window_get_size(PlatformWindow* win, int* w, int* h);
 void            platform_poll_events(void);
 
+/* Vulkan surface helpers (called by renderer during init/teardown) */
+#include <vulkan/vulkan.h>
+bool        platform_check_vulkan_support(void);
+const char** platform_get_required_instance_extensions(uint32_t* count);
+bool        platform_create_surface(PlatformWindow* win, VkInstance instance,
+                                    VkSurfaceKHR* out_surface);
+void        platform_destroy_surface(PlatformWindow* win);
+
 /* Renderer interface — implemented in renderer/renderer.c */
 RendererContext* renderer_create(PlatformWindow* win);
 void             renderer_destroy(RendererContext* r);
