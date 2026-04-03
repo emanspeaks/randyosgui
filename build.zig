@@ -4,6 +4,9 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
     const allow_system_deps = b.option(bool, "allow-system-deps", "Allow relying on globally installed SDK/libs") orelse false;
+    generateCompileCommandsJson() catch |err| {
+        std.debug.panic("failed to generate compile_commands.json: {s}", .{@errorName(err)});
+    };
 
     validateDependencyLayout(b, target, allow_system_deps);
 
@@ -97,6 +100,204 @@ pub fn build(b: *std.Build) void {
     //   Xvfb :99 -screen 0 1024x768x24 & DISPLAY=:99 zig build test
     const test_step = b.step("test", "Run unit tests (needs DISPLAY on headless systems)");
     test_step.dependOn(&run_tests.step);
+}
+
+const CompileCommand = struct {
+    directory: []const u8,
+    command: []const u8,
+    file: []const u8,
+};
+
+fn generateCompileCommandsJson() !void {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const alloc = arena.allocator();
+
+    const cwd = std.fs.cwd();
+    const cwd_path_native = try std.process.getCwdAlloc(alloc);
+    const cwd_path = try toPosixSlashes(alloc, cwd_path_native);
+
+    var entries = try std.ArrayList(CompileCommand).initCapacity(alloc, 0);
+    defer entries.deinit(alloc);
+
+    try appendCommandsForDir(
+        alloc,
+        cwd,
+        &entries,
+        cwd_path,
+        "include",
+        ".h",
+        true,
+    );
+    try appendCommandsForDir(
+        alloc,
+        cwd,
+        &entries,
+        cwd_path,
+        "src",
+        ".h",
+        true,
+    );
+    try appendCommandsForDir(
+        alloc,
+        cwd,
+        &entries,
+        cwd_path,
+        "src",
+        ".c",
+        false,
+    );
+    try appendCommandsForDir(
+        alloc,
+        cwd,
+        &entries,
+        cwd_path,
+        "examples",
+        ".c",
+        false,
+    );
+    try appendCommandsForDir(
+        alloc,
+        cwd,
+        &entries,
+        cwd_path,
+        "tests",
+        ".c",
+        false,
+    );
+
+    std.mem.sort(CompileCommand, entries.items, {}, struct {
+        fn lessThan(_: void, a: CompileCommand, b: CompileCommand) bool {
+            return std.mem.lessThan(u8, a.file, b.file);
+        }
+    }.lessThan);
+
+    var file = try cwd.createFile("compile_commands.json", .{ .truncate = true });
+    defer file.close();
+
+    try writeCompileCommandsJson(&file, entries.items);
+}
+
+fn writeCompileCommandsJson(file: *std.fs.File, entries: []const CompileCommand) !void {
+    try file.writeAll("[\n");
+    for (entries, 0..) |entry, idx| {
+        if (idx > 0) try file.writeAll(",\n");
+        try file.writeAll("  {\n");
+        try file.writeAll("    \"directory\": ");
+        try writeJsonString(file, entry.directory);
+        try file.writeAll(",\n");
+        try file.writeAll("    \"command\": ");
+        try writeJsonString(file, entry.command);
+        try file.writeAll(",\n");
+        try file.writeAll("    \"file\": ");
+        try writeJsonString(file, entry.file);
+        try file.writeAll("\n  }");
+    }
+    try file.writeAll("\n]\n");
+}
+
+fn writeJsonString(file: *std.fs.File, s: []const u8) !void {
+    try writeByte(file, '"');
+    for (s) |c| {
+        switch (c) {
+            '"' => try file.writeAll("\\\""),
+            '\\' => try file.writeAll("\\\\"),
+            '\n' => try file.writeAll("\\n"),
+            '\r' => try file.writeAll("\\r"),
+            '\t' => try file.writeAll("\\t"),
+            else => try writeByte(file, c),
+        }
+    }
+    try writeByte(file, '"');
+}
+
+fn writeByte(file: *std.fs.File, c: u8) !void {
+    const one = [1]u8{c};
+    try file.writeAll(&one);
+}
+
+fn appendCommandsForDir(
+    alloc: std.mem.Allocator,
+    cwd: std.fs.Dir,
+    entries: *std.ArrayList(CompileCommand),
+    cwd_path: []const u8,
+    root_rel: []const u8,
+    ext: []const u8,
+    is_header: bool,
+) !void {
+    var dir = cwd.openDir(root_rel, .{ .iterate = true }) catch |err| {
+        if (err == error.FileNotFound) return;
+        return err;
+    };
+    defer dir.close();
+
+    var walker = try dir.walk(alloc);
+    defer walker.deinit();
+
+    while (try walker.next()) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.basename, ext)) continue;
+
+        const rel_native = try std.fmt.allocPrint(alloc, "{s}/{s}", .{ root_rel, entry.path });
+        const rel_path = try toPosixSlashes(alloc, rel_native);
+        const command = try buildCompileCommand(alloc, rel_path, is_header);
+
+        try entries.append(alloc, .{
+            .directory = cwd_path,
+            .command = command,
+            .file = rel_path,
+        });
+    }
+}
+
+fn buildCompileCommand(alloc: std.mem.Allocator, rel_path: []const u8, is_header: bool) ![]const u8 {
+    var args = try std.ArrayList([]const u8).initCapacity(alloc, 0);
+    defer args.deinit(alloc);
+    try args.appendSlice(alloc, &.{ "zig", "cc" });
+    if (is_header) {
+        try args.appendSlice(alloc, &.{ "-x", "c-header" });
+    }
+    try args.appendSlice(alloc, &.{
+        "-std=c11",
+        "-Iinclude",
+        "-Isrc",
+        "-Ithird_party/glfw/include",
+        "-Ithird_party/vulkan/include",
+        "-Ithird_party/freetype/include",
+        "-c",
+        rel_path,
+    });
+
+    var out = try std.ArrayList(u8).initCapacity(alloc, 0);
+    for (args.items, 0..) |arg, idx| {
+        if (idx > 0) try out.append(alloc, ' ');
+        try appendShellArg(alloc, &out, arg);
+    }
+    return out.toOwnedSlice(alloc);
+}
+
+fn appendShellArg(alloc: std.mem.Allocator, out: *std.ArrayList(u8), arg: []const u8) !void {
+    if (std.mem.indexOfAny(u8, arg, " \t\"'\\") == null) {
+        try out.appendSlice(alloc, arg);
+        return;
+    }
+
+    try out.append(alloc, '"');
+    for (arg) |c| {
+        if (c == '"' or c == '\\') {
+            try out.append(alloc, '\\');
+        }
+        try out.append(alloc, c);
+    }
+    try out.append(alloc, '"');
+}
+
+fn toPosixSlashes(alloc: std.mem.Allocator, path: []const u8) ![]const u8 {
+    const out = try alloc.alloc(u8, path.len);
+    for (path, 0..) |c, i| {
+        out[i] = if (c == '\\') '/' else c;
+    }
+    return out;
 }
 
 fn installIfPresent(b: *std.Build, src_rel: []const u8, dst_rel: []const u8) void {

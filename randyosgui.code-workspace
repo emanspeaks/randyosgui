@@ -5,7 +5,28 @@
 		}
 	],
 	"settings": {
+		"C_Cpp.intelliSenseEngine": "disabled",
+		"C_Cpp.errorSquiggles": "disabled",
+		"C_Cpp.autocomplete": "disabled",
+		"C_Cpp.formatting": "disabled",
+		"files.associations": {
+			"*.c": "c",
+			"*.h": "c",
+			"*.inc": "c",
+			"*.ipp": "cpp",
+			"*.hpp": "cpp",
+			"*.hh": "cpp"
+		},
+		"clangd.onConfigChanged": "restart",
+		"clangd.arguments": [
+			"--background-index",
+			"--clang-tidy",
+			"--header-insertion=never"
+		],
 		"C_Cpp.files.exclude": {
+			"**/third_party/**": true
+		},
+		"files.exclude": {
 			"**/third_party/**": true
 		},
 		"files.watcherExclude": {
@@ -14,5 +35,13 @@
 		"search.exclude": {
 			"**/third_party/_downloads/**": true
 		}
+	},
+	"extensions": {
+		"recommendations": [
+			"llvm-vs-code-extensions.vscode-clangd"
+		],
+		"unwantedRecommendations": [
+			"ms-vscode.cpptools"
+		]
 	}
 }

@@ -1,5 +1,6 @@
 .zig-cache/
 zig-out/
+compile_commands.json
 third_party/_tmp_fetch/
 third_party/_downloads/
 # third_party/glfw/lib/**/*.dll
@@ -11,3 +12,4 @@ third_party/_downloads/
 third_party/glfw/
 third_party/freetype/
 third_party/vulkan/
+.cache/

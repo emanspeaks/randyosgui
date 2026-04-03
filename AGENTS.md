@@ -45,3 +45,14 @@ randyosgui is a cross-platform retained-mode GUI framework with a C-first API an
 - Minimal hidden global state.
 - Keep internals modular: platform, renderer, widgets, text.
 - Optimize for maintainability, testability, and binding-friendliness.
+
+## Zig Toolchain Notes
+
+- Project Zig version is pinned to 0.15.2. Do not assume APIs from older or newer Zig releases.
+- When editing `build.zig`, prefer validating API usage against Zig 0.15.2 stdlib signatures first.
+- Known 0.15.2 pattern in this repo:
+  - `std.ArrayList(T)` operations are allocator-aware in common paths.
+  - Use allocator-aware forms for init/append/deinit/owned-slice conversions (for example `initCapacity(alloc, ...)`, `append(alloc, ...)`, `appendSlice(alloc, ...)`, `deinit(alloc)`, `toOwnedSlice(alloc)`).
+- Avoid guessing JSON helpers across Zig versions.
+  - If a `std.json` helper name is uncertain for 0.15.2, either verify it in the local Zig stdlib or emit JSON manually with a writer.
+- For cross-platform tooling, prefer native Zig build logic over shell-specific scripts unless there is a strong reason otherwise.
