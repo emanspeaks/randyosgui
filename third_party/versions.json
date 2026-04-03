@@ -1,0 +1,20 @@
+{
+  "glfw": {
+    "version": "3.4",
+    "url": "https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.WIN64.zip",
+    "sha256": "54EFA829400F2A0537F742B2B3BDD74E437BB4F2F048E4B7D3C5557D11A611E6"
+  },
+  "freetype_windows_binaries": {
+    "commit": "2fd97db170b19a9dda26131a784707611b9a4da1",
+    "url": "https://github.com/ubawurinna/freetype-windows-binaries/archive/2fd97db170b19a9dda26131a784707611b9a4da1.zip",
+    "sha256": "726A5FAFA80249F6AF24FB712ECA148213E37B794F3B1DCB107F857588A8307A"
+  },
+  "vulkan_headers": {
+    "repo": "https://github.com/KhronosGroup/Vulkan-Headers.git",
+    "commit": "afe9eb980aa928a66d1c9c06f38c55dd59868720"
+  },
+  "vulkan_loader": {
+    "repo": "https://github.com/KhronosGroup/Vulkan-Loader.git",
+    "commit": "df84d2be47457a8dfd7eb66f8c2b031683bd1ba5"
+  }
+}

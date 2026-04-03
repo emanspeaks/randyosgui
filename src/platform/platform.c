@@ -1,7 +1,25 @@
 #include "../randyosgui_internal.h"
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#if RANDYOSGUI_HAS_VULKAN
+#  if defined(__has_include)
+#    if __has_include(<GLFW/glfw3.h>)
+#      define RANDYOSGUI_HAS_GLFW 1
+#    else
+#      define RANDYOSGUI_HAS_GLFW 0
+#    endif
+#  else
+#    define RANDYOSGUI_HAS_GLFW 1
+#  endif
+#else
+#  define RANDYOSGUI_HAS_GLFW 0
+#endif
+
+#if RANDYOSGUI_HAS_GLFW
+#  define GLFW_INCLUDE_VULKAN
+#  include <GLFW/glfw3.h>
+#endif
+
+#if RANDYOSGUI_HAS_GLFW
 
 /*
  * Platform backend — GLFW 3
@@ -140,3 +158,61 @@ void platform_destroy_surface(PlatformWindow* win) {
     win->surface  = VK_NULL_HANDLE;
     win->instance = VK_NULL_HANDLE;
 }
+
+#else
+
+struct PlatformWindow {
+    int unused;
+};
+
+PlatformWindow* platform_window_create(const RandyosgWindowDesc* desc) {
+    (void)desc;
+    fprintf(stderr, "[randyosgui/platform] GLFW and Vulkan headers not found; platform backend disabled\n");
+    return NULL;
+}
+
+void platform_window_destroy(PlatformWindow* win) {
+    free(win);
+}
+
+bool platform_window_should_close(PlatformWindow* win) {
+    (void)win;
+    return true;
+}
+
+void platform_window_set_title(PlatformWindow* win, const char* title) {
+    (void)win;
+    (void)title;
+}
+
+void platform_window_get_size(PlatformWindow* win, int* w, int* h) {
+    (void)win;
+    if (w) *w = 0;
+    if (h) *h = 0;
+}
+
+void platform_poll_events(void) {
+}
+
+bool platform_check_vulkan_support(void) {
+    return false;
+}
+
+const char** platform_get_required_instance_extensions(uint32_t* count) {
+    if (count) *count = 0;
+    return NULL;
+}
+
+bool platform_create_surface(PlatformWindow* win, VkInstance instance,
+                             VkSurfaceKHR* out_surface) {
+    (void)win;
+    (void)instance;
+    (void)out_surface;
+    return false;
+}
+
+void platform_destroy_surface(PlatformWindow* win) {
+    (void)win;
+}
+
+#endif

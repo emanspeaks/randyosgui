@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"C_Cpp.files.exclude": {
+			"**/third_party/**": true
+		},
+		"files.watcherExclude": {
+			"**/third_party/_downloads/**": true
+		},
+		"search.exclude": {
+			"**/third_party/_downloads/**": true
+		}
+	}
+}

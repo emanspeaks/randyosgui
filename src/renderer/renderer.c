@@ -1,7 +1,9 @@
 #include "../randyosgui_internal.h"
-#include <vulkan/vulkan.h>
-#include <string.h>
 #include <stdlib.h>
+
+#if RANDYOSGUI_HAS_VULKAN
+
+#include <string.h>
 
 /*
  * Renderer backend — Vulkan
@@ -799,3 +801,26 @@ void renderer_render(RendererContext* r, Widget* widgets) {
 
     r->frame = (frame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
+
+#else
+
+struct RendererContext {
+    int unused;
+};
+
+RendererContext* renderer_create(PlatformWindow* win) {
+    (void)win;
+    fprintf(stderr, "[randyosgui/renderer] Vulkan headers not found; renderer backend disabled\n");
+    return NULL;
+}
+
+void renderer_destroy(RendererContext* r) {
+    free(r);
+}
+
+void renderer_render(RendererContext* r, Widget* widgets) {
+    (void)r;
+    (void)widgets;
+}
+
+#endif

@@ -1,7 +1,7 @@
 #ifndef RANDYOSGUI_INTERNAL_H
 #define RANDYOSGUI_INTERNAL_H
 
-#include "randyosgui.h"
+#include "../include/randyosgui.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -91,7 +91,19 @@ void            platform_window_get_size(PlatformWindow* win, int* w, int* h);
 void            platform_poll_events(void);
 
 /* Vulkan surface helpers (called by renderer during init/teardown) */
-#include <vulkan/vulkan.h>
+#if defined(__has_include)
+#  if __has_include(<vulkan/vulkan.h>)
+#    include <vulkan/vulkan.h>
+#    define RANDYOSGUI_HAS_VULKAN 1
+#  else
+#    define RANDYOSGUI_HAS_VULKAN 0
+typedef struct VkInstance_T* VkInstance;
+typedef struct VkSurfaceKHR_T* VkSurfaceKHR;
+#  endif
+#else
+#  include <vulkan/vulkan.h>
+#  define RANDYOSGUI_HAS_VULKAN 1
+#endif
 bool        platform_check_vulkan_support(void);
 const char** platform_get_required_instance_extensions(uint32_t* count);
 bool        platform_create_surface(PlatformWindow* win, VkInstance instance,

@@ -1,2 +1,13 @@
 .zig-cache/
 zig-out/
+third_party/_tmp_fetch/
+third_party/_downloads/
+# third_party/glfw/lib/**/*.dll
+# third_party/glfw/lib/**/*.lib
+# third_party/freetype/lib/**/*.dll
+# third_party/freetype/lib/**/*.lib
+# third_party/vulkan/lib/**/*.dll
+# third_party/vulkan/lib/**/*.lib
+third_party/glfw/
+third_party/freetype/
+third_party/vulkan/
