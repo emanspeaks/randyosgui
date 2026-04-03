@@ -38,10 +38,40 @@
 	},
 	"extensions": {
 		"recommendations": [
-			"llvm-vs-code-extensions.vscode-clangd"
+			"llvm-vs-code-extensions.vscode-clangd",
+			"vadimcn.vscode-lldb"
 		],
 		"unwantedRecommendations": [
 			"ms-vscode.cpptools"
+		]
+	},
+	"tasks": {
+		"version": "2.0.0",
+		"tasks": [
+			{
+				"label": "zig: build",
+				"type": "shell",
+				"command": "zig",
+				"args": [
+					"build"
+				],
+				"group": "build",
+				"problemMatcher": []
+			}
+		]
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"type": "lldb",
+				"request": "launch",
+				"name": "Debug hello (LLDB)",
+				"program": "${workspaceFolder}/zig-out/bin/hello.exe",
+				"cwd": "${workspaceFolder}",
+				"args": [],
+				"preLaunchTask": "zig: build"
+			}
 		]
 	}
 }
