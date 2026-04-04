@@ -108,5 +108,23 @@ $vkLoaderDir = Join-Path $downloads 'Vulkan-Loader'
 Sync-GitCommit $manifest.vulkan_loader.repo $manifest.vulkan_loader.commit $vkLoaderDir
 zig dlltool -m i386:x86-64 -d (Join-Path $vkLoaderDir 'loader/vulkan-1.def') -D vulkan-1.dll -l 'third_party/vulkan/lib/windows/vulkan-1.lib' | Out-Null
 
+# Arimo Nerd Font (sans)
+$arimoTar = Join-Path $downloads 'Arimo.tar.xz'
+Save-CheckedFile $manifest.arimo_nerd_font.url $arimoTar $manifest.arimo_nerd_font.sha256
+New-Directory 'third_party/fonts/arimo'
+$arimoTarget = 'third_party/fonts/arimo/ArimoNerdFont-Regular.ttf'
+if (-not (Test-Path $arimoTarget)) {
+    tar -xf $arimoTar -C 'third_party/fonts/arimo' ArimoNerdFont-Regular.ttf
+}
+
+# AtkynsonMono Nerd Font (mono)
+$atkinsonTar = Join-Path $downloads 'AtkinsonHyperlegibleMono.tar.xz'
+Save-CheckedFile $manifest.atkinson_hyperlegible_mono_nerd_font.url $atkinsonTar $manifest.atkinson_hyperlegible_mono_nerd_font.sha256
+New-Directory 'third_party/fonts/atkinsonhyperlegiblemono'
+$atkinsonTarget = 'third_party/fonts/atkinsonhyperlegiblemono/AtkynsonMonoNerdFontMono-Regular.otf'
+if (-not (Test-Path $atkinsonTarget)) {
+    tar -xf $atkinsonTar -C 'third_party/fonts/atkinsonhyperlegiblemono' AtkynsonMonoNerdFontMono-Regular.otf
+}
+
 Write-Host 'Dependency fetch complete.'
 Write-Host 'Pinned artifacts populated under third_party/ for Windows.'

@@ -16,5 +16,15 @@
   "vulkan_loader": {
     "repo": "https://github.com/KhronosGroup/Vulkan-Loader.git",
     "commit": "df84d2be47457a8dfd7eb66f8c2b031683bd1ba5"
+  },
+  "arimo_nerd_font": {
+    "version": "3.4.0",
+    "url": "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/Arimo.tar.xz",
+    "sha256": "006464DE19502BD49A72265058811665B62B823509BBBD2E7181BA87046B6B08"
+  },
+  "atkinson_hyperlegible_mono_nerd_font": {
+    "version": "3.4.0",
+    "url": "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/AtkinsonHyperlegibleMono.tar.xz",
+    "sha256": "8643AB571F547C6AF0352A08E617BA7303965B2882AB9F36D61E8D4680761A59"
   }
 }

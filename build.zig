@@ -12,8 +12,25 @@ pub fn build(b: *std.Build) void {
 
     const lib_sources: []const []const u8 = &.{
         "src/randyosgui.c",
+        "src/widgets/label.c",
+        "src/widgets/button.c",
+        "src/widgets/checkbox.c",
+        "src/widgets/radio.c",
+        "src/widgets/textbox.c",
+        "src/widgets/dropdown.c",
+        "src/widgets/slider.c",
+        "src/widgets/progress.c",
+        "src/widgets/groupbox.c",
+        "src/widgets/tab.c",
+        "src/widgets/tree.c",
+        "src/widgets/table.c",
+        "src/widgets/field_border.c",
+        "src/widgets/status_field.c",
+        "src/widgets/sunken_panel.c",
         "src/platform/platform.c",
-        "src/renderer/renderer.c",
+        "src/renderer/renderer_vk.c",
+        "src/renderer/renderer_draw.c",
+        "src/renderer/renderer_widgets.c",
     };
 
     const c_flags: []const []const u8 = &.{
@@ -69,7 +86,7 @@ pub fn build(b: *std.Build) void {
     b.installFile("include/randyosgui.h", "include/randyosgui.h");
 
     // --- Examples ---
-    buildExample(b, "hello", "examples/hello/main.c", target, optimize, lib);
+    buildExample(b, "win98-gallery", "examples/win98_gallery/main.c", target, optimize, lib);
 
     // --- Tests ---
     const test_mod = b.createModule(.{
@@ -78,10 +95,14 @@ pub fn build(b: *std.Build) void {
         .link_libc = true,
     });
     test_mod.addCSourceFiles(.{
-        .files = &.{"tests/test_randyosgui.c"},
+        .files = &.{
+            "tests/test_randyosgui.c",
+            "tests/test_draw_commands.c",
+        },
         .flags = c_flags,
     });
     test_mod.addIncludePath(b.path("include"));
+    test_mod.addIncludePath(b.path("src"));
     addThirdPartyIncludePaths(test_mod, b, target);
     test_mod.linkLibrary(lib);
     addPlatformLibs(test_mod, b, target);
@@ -459,6 +480,10 @@ fn buildExample(
     b.installArtifact(exe);
 
     const run = b.addRunArtifact(exe);
+    if (target.result.os.tag == .windows) {
+        run.addPathDir("third_party/glfw/lib/windows");
+        run.addPathDir("third_party/freetype/lib/windows");
+    }
     const step = b.step("run-" ++ name, "Run the " ++ name ++ " example");
     step.dependOn(&run.step);
 }

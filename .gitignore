@@ -3,6 +3,8 @@ zig-out/
 compile_commands.json
 third_party/_tmp_fetch/
 third_party/_downloads/
+third_party/_references/
+third_party/fonts/
 # third_party/glfw/lib/**/*.dll
 # third_party/glfw/lib/**/*.lib
 # third_party/freetype/lib/**/*.dll
@@ -13,3 +15,4 @@ third_party/glfw/
 third_party/freetype/
 third_party/vulkan/
 .cache/
+node_modules/

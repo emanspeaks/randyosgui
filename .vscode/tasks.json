@@ -1,0 +1,49 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Gallery",
+      "type": "shell",
+      "command": "zig",
+      "args": ["build"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": {
+        "owner": "zig",
+        "pattern": {
+          "regexp": "^(.+):(\\d+):(\\d+): (error|warning): (.*)$",
+          "file": 1,
+          "location": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
+      },
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "Run Tests",
+      "type": "shell",
+      "command": "zig",
+      "args": ["build", "test"],
+      "problemMatcher": {
+        "owner": "zig",
+        "pattern": {
+          "regexp": "^(.+):(\\d+):(\\d+): (error|warning): (.*)$",
+          "file": 1,
+          "location": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
+      },
+      "presentation": {
+        "reveal": "always"
+      }
+    }
+  ]
+}

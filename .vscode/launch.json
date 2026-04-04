@@ -1,0 +1,28 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Gallery (LLDB)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/zig-out/bin/win98-gallery.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopOnEntry": false,
+      "preLaunchTask": "Build Gallery",
+      "sourceMap": {}
+    },
+    {
+      "name": "Debug Gallery (Windows Debugger)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/zig-out/bin/win98-gallery.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "Build Gallery",
+      "environment": [],
+      "console": "integratedTerminal"
+    }
+  ]
+}

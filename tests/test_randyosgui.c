@@ -16,6 +16,12 @@ static int tests_passed = 0;
     printf("PASS\n"); \
 } while (0)
 
+/* draw-command conformance tests */
+void drawspec_checkbox_exact(void);
+void drawspec_radio_exact_contrast(void);
+void drawspec_status_field_border(void);
+void drawspec_sunken_panel_border(void);
+
 /* =========================================================================
  * Tests
  * ========================================================================= */
@@ -100,6 +106,37 @@ TEST(widget_button_callback) {
     randyosgui_shutdown(ctx);
 }
 
+static void checkbox_cb(RandyosgWidgetId id, bool checked, void* userdata) {
+    (void)id;
+    (void)checked;
+    int* toggles = (int*)userdata;
+    (*toggles)++;
+}
+
+TEST(widget_checkbox_state) {
+    RandyosgContext* ctx = randyosgui_init();
+    RandyosgWindowDesc desc = { .title="t", .width=180, .height=120 };
+    RandyosgWindow* win = randyosgui_window_create(ctx, &desc);
+    assert(win != NULL);
+
+    RandyosgWidgetId id = randyosgui_checkbox_create(win, "enable feature", true);
+    assert(id != 0);
+    assert(randyosgui_checkbox_get_checked(win, id) == true);
+
+    randyosgui_checkbox_set_checked(win, id, false);
+    assert(randyosgui_checkbox_get_checked(win, id) == false);
+
+    int toggles = 0;
+    randyosgui_checkbox_set_callback(win, id, checkbox_cb, &toggles);
+    assert(toggles == 0);
+    /* callback wiring sanity (interactive toggling tested via examples) */
+    randyosgui_checkbox_set_checked(win, id, true);
+    assert(randyosgui_checkbox_get_checked(win, id) == true);
+
+    randyosgui_window_destroy(win);
+    randyosgui_shutdown(ctx);
+}
+
 TEST(null_safety) {
     /* None of these should crash */
     randyosgui_window_destroy(NULL);
@@ -110,6 +147,23 @@ TEST(null_safety) {
 
     assert(randyosgui_label_create(NULL, "x")    == 0);
     assert(randyosgui_button_create(NULL, "x")   == 0);
+    assert(randyosgui_checkbox_create(NULL, "x", false) == 0);
+}
+
+TEST(draw_commands_checkbox_exact) {
+    drawspec_checkbox_exact();
+}
+
+TEST(draw_commands_radio_exact_contrast) {
+    drawspec_radio_exact_contrast();
+}
+
+TEST(draw_commands_status_field_border) {
+    drawspec_status_field_border();
+}
+
+TEST(draw_commands_sunken_panel_border) {
+    drawspec_sunken_panel_border();
 }
 
 /* =========================================================================
@@ -125,8 +179,14 @@ int main(void) {
     RUN(window_create_destroy);
     RUN(widget_label);
     RUN(widget_button_callback);
+    RUN(widget_checkbox_state);
     RUN(null_safety);
+    RUN(draw_commands_checkbox_exact);
+    RUN(draw_commands_radio_exact_contrast);
+    RUN(draw_commands_status_field_border);
+    RUN(draw_commands_sunken_panel_border);
     printf("================\n");
     printf("%d / %d passed\n", tests_passed, tests_run);
+
     return (tests_passed == tests_run) ? 0 : 1;
 }
