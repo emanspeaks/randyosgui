@@ -1,6 +1,6 @@
 #include "tab.h"
 
-RandyosgWidgetId randyosgui_tab_create(RandyosgWindow* win,
+RandyWidgetId randy_tab_create(RandyWindow* win,
                                         const char* label,
                                         bool active) {
     if (!win) return 0;
@@ -10,8 +10,8 @@ RandyosgWidgetId randyosgui_tab_create(RandyosgWindow* win,
     return w->id;
 }
 
-void randyosgui_tab_set_active(RandyosgWindow* win,
-                                RandyosgWidgetId id,
+void randy_tab_set_active(RandyWindow* win,
+                                RandyWidgetId id,
                                 bool active) {
     if (!win) return;
     Widget* w = widget_find(win, id);
@@ -19,17 +19,17 @@ void randyosgui_tab_set_active(RandyosgWindow* win,
     w->checked = active;
 }
 
-bool randyosgui_tab_get_active(RandyosgWindow* win,
-                                RandyosgWidgetId id) {
+bool randy_tab_get_active(RandyWindow* win,
+                                RandyWidgetId id) {
     if (!win) return false;
     Widget* w = widget_find(win, id);
     if (!w || w->kind != WIDGET_TAB) return false;
     return w->checked;
 }
 
-void randyosgui_tab_set_callback(RandyosgWindow* win,
-                                  RandyosgWidgetId id,
-                                  RandyosgClickCallback cb,
+void randy_tab_set_callback(RandyWindow* win,
+                                  RandyWidgetId id,
+                                  RandyClickCallback cb,
                                   void* userdata) {
     if (!win) return;
     Widget* w = widget_find(win, id);
@@ -54,21 +54,21 @@ void draw_tab(RendererContext* r, VkCommandBuffer cmd,
                 active_left = t->x + 2;
                 active_right = t->x + t->w - 2;
             }
-            t = t->next;
+            t = t->next_sibling;
         }
 
         int base_y = w->y + w->h - 1;
         if (active_left < 0 || active_right <= active_left) {
             draw_rect(cmd, extent, tabs_left, base_y, tabs_right - tabs_left, 1,
-                      WIN98.button_shadow_r, WIN98.button_shadow_g, WIN98.button_shadow_b);
+                      g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
         } else {
             if (active_left > tabs_left) {
                 draw_rect(cmd, extent, tabs_left, base_y, active_left - tabs_left, 1,
-                          WIN98.button_shadow_r, WIN98.button_shadow_g, WIN98.button_shadow_b);
+                          g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
             }
             if (tabs_right > active_right) {
                 draw_rect(cmd, extent, active_right, base_y, tabs_right - active_right, 1,
-                          WIN98.button_shadow_r, WIN98.button_shadow_g, WIN98.button_shadow_b);
+                          g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
             }
         }
         *in_tab_strip = true;
@@ -79,12 +79,12 @@ void draw_tab(RendererContext* r, VkCommandBuffer cmd,
     int th = w->checked ? (w->h + 2) : w->h;
 
     draw_rect(cmd, extent, tx, ty, w->w, th,
-              WIN98.surface_r, WIN98.surface_g, WIN98.surface_b);
+              g_style.surface.r, g_style.surface.g, g_style.surface.b);
     draw_tab_border_98(cmd, extent, tx, ty, w->w, th);
 
     if (w->checked) {
         draw_rect(cmd, extent, tx + 2, ty + th - 1, w->w - 4, 2,
-                  WIN98.surface_r, WIN98.surface_g, WIN98.surface_b);
+                  g_style.surface.r, g_style.surface.g, g_style.surface.b);
     }
 
     Widget text_area = *w;
@@ -92,8 +92,8 @@ void draw_tab(RendererContext* r, VkCommandBuffer cmd,
     text_area.x = tx + ((w->w - tw) / 2) - 6;
     text_area.w = tw + 12;
     draw_widget_text(r, cmd, &text_area, extent, 4,
-                     WIN98.text_r, WIN98.text_g, WIN98.text_b,
-                     WIN98.surface_r, WIN98.surface_g, WIN98.surface_b);
+                     g_style.text.r, g_style.text.g, g_style.text.b,
+                     g_style.surface.r, g_style.surface.g, g_style.surface.b);
 
     (void)widgets_head;
 }

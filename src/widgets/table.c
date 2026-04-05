@@ -1,6 +1,6 @@
 #include "table.h"
 
-RandyosgWidgetId randyosgui_table_header_create(RandyosgWindow* win,
+RandyWidgetId randy_table_header_create(RandyWindow* win,
                                                  int num_cols,
                                                  const char* const* labels,
                                                  const int* col_widths) {
@@ -9,21 +9,21 @@ RandyosgWidgetId randyosgui_table_header_create(RandyosgWindow* win,
     if (!w) return 0;
 
     w->num_cells  = num_cols;
-    w->cells      = (char**)randyosgui_alloc((size_t)num_cols * sizeof(char*));
-    w->col_widths = (int*)randyosgui_alloc((size_t)num_cols * sizeof(int));
+    w->cells      = (char**)randy_alloc((size_t)num_cols * sizeof(char*));
+    w->col_widths = (int*)randy_alloc((size_t)num_cols * sizeof(int));
     if (!w->cells || !w->col_widths) {
         free(w->cells); free(w->col_widths);
         w->cells = NULL; w->col_widths = NULL; w->num_cells = 0;
         return 0;
     }
     for (int i = 0; i < num_cols; i++) {
-        w->cells[i]      = randyosgui_strdup(labels[i]);
+        w->cells[i]      = randy_strdup(labels[i]);
         w->col_widths[i] = col_widths[i];
     }
     return w->id;
 }
 
-RandyosgWidgetId randyosgui_table_row_create(RandyosgWindow* win,
+RandyWidgetId randy_table_row_create(RandyWindow* win,
                                               int num_cells,
                                               const char* const* cells,
                                               bool selected) {
@@ -32,18 +32,18 @@ RandyosgWidgetId randyosgui_table_row_create(RandyosgWindow* win,
     if (!w) return 0;
 
     w->num_cells = num_cells;
-    w->cells     = (char**)randyosgui_alloc((size_t)num_cells * sizeof(char*));
+    w->cells     = (char**)randy_alloc((size_t)num_cells * sizeof(char*));
     if (!w->cells) { w->num_cells = 0; return 0; }
     for (int i = 0; i < num_cells; i++) {
-        w->cells[i] = randyosgui_strdup(cells[i]);
+        w->cells[i] = randy_strdup(cells[i]);
     }
     w->checked = selected;
     return w->id;
 }
 
-void randyosgui_table_row_set_callback(RandyosgWindow* win,
-                                        RandyosgWidgetId id,
-                                        RandyosgClickCallback cb,
+void randy_table_row_set_callback(RandyWindow* win,
+                                        RandyWidgetId id,
+                                        RandyClickCallback cb,
                                         void* userdata) {
     if (!win) return;
     Widget* w = widget_find(win, id);
@@ -59,7 +59,7 @@ void draw_table_header(RendererContext* r, VkCommandBuffer cmd,
     for (int col = 0; col < w->num_cells; col++) {
         int cw = w->col_widths[col];
         draw_rect(cmd, extent, cx, w->y, cw, w->h,
-                  WIN98.surface_r, WIN98.surface_g, WIN98.surface_b);
+                  g_style.surface.r, g_style.surface.g, g_style.surface.b);
         draw_bevel(cmd, extent, cx, w->y, cw, w->h, false);
         if (r->font_sans && w->cells[col] && w->cells[col][0]) {
             Widget clip = *w;
@@ -68,8 +68,8 @@ void draw_table_header(RendererContext* r, VkCommandBuffer cmd,
             draw_text_span(r, cmd, extent, &clip, r->font_sans,
                            s, s + strlen(s),
                            cx + 6, w->y + (w->h / 2) + 4,
-                           WIN98.text_r, WIN98.text_g, WIN98.text_b,
-                           WIN98.surface_r, WIN98.surface_g, WIN98.surface_b);
+                           g_style.text.r, g_style.text.g, g_style.text.b,
+                           g_style.surface.r, g_style.surface.g, g_style.surface.b);
         }
         cx += cw;
     }
@@ -80,18 +80,18 @@ void draw_table_row(RendererContext* r, VkCommandBuffer cmd,
                     const Widget* widgets_head) {
     float bg_r, bg_g, bg_b, fg_r, fg_g, fg_b;
     if (w->checked) {
-        bg_r = WIN98.dialog_blue_r; bg_g = WIN98.dialog_blue_g; bg_b = WIN98.dialog_blue_b;
+        bg_r = g_style.highlight.r; bg_g = g_style.highlight.g; bg_b = g_style.highlight.b;
         fg_r = 1.0f; fg_g = 1.0f; fg_b = 1.0f;
     } else {
         bg_r = 1.0f; bg_g = 1.0f; bg_b = 1.0f;
-        fg_r = WIN98.text_r; fg_g = WIN98.text_g; fg_b = WIN98.text_b;
+        fg_r = g_style.text.r; fg_g = g_style.text.g; fg_b = g_style.text.b;
     }
     draw_widget_rect(cmd, w, extent, bg_r, bg_g, bg_b);
 
     if (w->num_cells <= 0 || !w->cells) return;
 
     const Widget* hdr = NULL;
-    for (const Widget* h = widgets_head; h != w; h = h->next) {
+    for (const Widget* h = widgets_head; h != w; h = h->next_sibling) {
         if (h->kind == WIDGET_TABLE_HEADER) hdr = h;
     }
     if (!hdr || !hdr->col_widths || hdr->num_cells != w->num_cells) {

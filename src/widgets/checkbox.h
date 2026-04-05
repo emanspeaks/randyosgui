@@ -5,15 +5,15 @@
 #include "../renderer/renderer_private.h"
 
 /* Public API */
-RandyosgWidgetId randyosgui_checkbox_create(RandyosgWindow* win, const char* label,
+RandyWidgetId randy_checkbox_create(RandyWindow* win, const char* label,
                                              bool checked);
-void             randyosgui_checkbox_set_checked(RandyosgWindow* win, RandyosgWidgetId id,
+void             randy_checkbox_set_checked(RandyWindow* win, RandyWidgetId id,
                                                   bool checked);
-bool             randyosgui_checkbox_get_checked(RandyosgWindow* win, RandyosgWidgetId id);
-void             randyosgui_checkbox_set_callback(RandyosgWindow* win, RandyosgWidgetId id,
-                                                   RandyosgToggleCallback cb, void* userdata);
+bool             randy_checkbox_get_checked(RandyWindow* win, RandyWidgetId id);
+void             randy_checkbox_set_callback(RandyWindow* win, RandyWidgetId id,
+                                                   RandyToggleCallback cb, void* userdata);
 
-/* Renderer — draw */
+/* Renderer â€” draw */
 void draw_checkbox(RendererContext* r, VkCommandBuffer cmd,
                    const Widget* w, VkExtent2D extent);
 

@@ -1,7 +1,7 @@
 #include "renderer_private.h"
 
 /*
- * renderer_draw.c — Win98 theme palette, text system, and draw primitives.
+ * renderer_draw.c â€” Win98 theme palette, text system, and draw primitives.
  *
  * Covers:
  *   - Global draw-capture state (g_capture) for headless testing
@@ -21,18 +21,11 @@
 DrawCapture g_capture = {0};
 
 /* =========================================================================
- * Win98 theme palette
+ * Win98 theme palette â€” now driven by g_style (see style.h / style.c)
  * ========================================================================= */
 
-const Win98Theme WIN98 = {
-    .text_r = 0.133f, .text_g = 0.133f, .text_b = 0.133f,
-    .surface_r = 0.753f, .surface_g = 0.753f, .surface_b = 0.753f,
-    .button_face_r = 0.875f, .button_face_g = 0.875f, .button_face_b = 0.875f,
-    .button_highlight_r = 1.000f, .button_highlight_g = 1.000f, .button_highlight_b = 1.000f,
-    .button_shadow_r = 0.502f, .button_shadow_g = 0.502f, .button_shadow_b = 0.502f,
-    .window_frame_r = 0.039f, .window_frame_g = 0.039f, .window_frame_b = 0.039f,
-    .dialog_blue_r = 0.000f, .dialog_blue_g = 0.000f, .dialog_blue_b = 0.502f,
-};
+/* Backward-compat: kept as shorthand macros for draw code below. */
+#define S g_style
 
 /* =========================================================================
  * Text system
@@ -46,7 +39,7 @@ bool init_text_system(RendererContext* r) {
         "third_party/fonts/atkinsonhyperlegiblemono/AtkynsonMonoNerdFontMono-Regular.otf";
 
     if (FT_Init_FreeType(&r->ft_library) != 0) {
-        fprintf(stderr, "[randyosgui/renderer] FreeType init failed; text disabled\n");
+        fprintf(stderr, "[randy/renderer] FreeType init failed; text disabled\n");
         r->ft_library = NULL;
         r->font_sans = NULL;
         r->font_mono = NULL;
@@ -54,7 +47,7 @@ bool init_text_system(RendererContext* r) {
     }
 
     if (FT_New_Face(r->ft_library, SANS_PATH, 0, &r->font_sans) != 0) {
-        fprintf(stderr, "[randyosgui/renderer] failed to load sans font: %s\n", SANS_PATH);
+        fprintf(stderr, "[randy/renderer] failed to load sans font: %s\n", SANS_PATH);
         FT_Done_FreeType(r->ft_library);
         r->ft_library = NULL;
         r->font_sans = NULL;
@@ -63,7 +56,7 @@ bool init_text_system(RendererContext* r) {
     }
 
     if (FT_New_Face(r->ft_library, MONO_PATH, 0, &r->font_mono) != 0) {
-        fprintf(stderr, "[randyosgui/renderer] failed to load mono font: %s\n", MONO_PATH);
+        fprintf(stderr, "[randy/renderer] failed to load mono font: %s\n", MONO_PATH);
         FT_Done_Face(r->font_sans);
         FT_Done_FreeType(r->ft_library);
         r->ft_library = NULL;
@@ -75,7 +68,6 @@ bool init_text_system(RendererContext* r) {
     FT_Set_Pixel_Sizes(r->font_sans, 0, UI_FONT_PX);
     FT_Set_Pixel_Sizes(r->font_mono, 0, UI_FONT_PX);
 
-    fprintf(stderr, "[randyosgui/renderer] text fonts: Arimo(sans) + AtkynsonMono(mono) (%upx)\n", UI_FONT_PX);
     return true;
 }
 
@@ -117,7 +109,7 @@ void draw_rect(VkCommandBuffer cmd,
 
     if (g_capture.enabled) {
         if (g_capture.count < g_capture.max_ops) {
-            g_capture.ops[g_capture.count] = (RandyosgDrawOp){
+            g_capture.ops[g_capture.count] = (RandyDrawOp){
                 .x = x, .y = y, .w = rw, .h = rh,
                 .r = r, .g = g, .b = b,
             };
@@ -146,19 +138,19 @@ void draw_bevel(VkCommandBuffer cmd, VkExtent2D extent,
                 int x, int y, int w, int h, bool sunken) {
     if (w < 3 || h < 3) return;
 
-    float tl_r = sunken ? WIN98.window_frame_r : WIN98.button_highlight_r;
-    float tl_g = sunken ? WIN98.window_frame_g : WIN98.button_highlight_g;
-    float tl_b = sunken ? WIN98.window_frame_b : WIN98.button_highlight_b;
-    float br_r = sunken ? WIN98.button_highlight_r : WIN98.window_frame_r;
-    float br_g = sunken ? WIN98.button_highlight_g : WIN98.window_frame_g;
-    float br_b = sunken ? WIN98.button_highlight_b : WIN98.window_frame_b;
+    float tl_r = sunken ? g_style.window_frame.r : g_style.button_highlight.r;
+    float tl_g = sunken ? g_style.window_frame.g : g_style.button_highlight.g;
+    float tl_b = sunken ? g_style.window_frame.b : g_style.button_highlight.b;
+    float br_r = sunken ? g_style.button_highlight.r : g_style.window_frame.r;
+    float br_g = sunken ? g_style.button_highlight.g : g_style.window_frame.g;
+    float br_b = sunken ? g_style.button_highlight.b : g_style.window_frame.b;
 
-    float inner_tl_r = sunken ? WIN98.button_shadow_r : WIN98.button_face_r;
-    float inner_tl_g = sunken ? WIN98.button_shadow_g : WIN98.button_face_g;
-    float inner_tl_b = sunken ? WIN98.button_shadow_b : WIN98.button_face_b;
-    float inner_br_r = sunken ? WIN98.button_face_r : WIN98.button_shadow_r;
-    float inner_br_g = sunken ? WIN98.button_face_g : WIN98.button_shadow_g;
-    float inner_br_b = sunken ? WIN98.button_face_b : WIN98.button_shadow_b;
+    float inner_tl_r = sunken ? g_style.button_shadow.r : g_style.button_face.r;
+    float inner_tl_g = sunken ? g_style.button_shadow.g : g_style.button_face.g;
+    float inner_tl_b = sunken ? g_style.button_shadow.b : g_style.button_face.b;
+    float inner_br_r = sunken ? g_style.button_face.r : g_style.button_shadow.r;
+    float inner_br_g = sunken ? g_style.button_face.g : g_style.button_shadow.g;
+    float inner_br_b = sunken ? g_style.button_face.b : g_style.button_shadow.b;
 
     draw_rect(cmd, extent, x, y, w, 1, tl_r, tl_g, tl_b);
     draw_rect(cmd, extent, x, y, 1, h, tl_r, tl_g, tl_b);
@@ -173,7 +165,7 @@ void draw_bevel(VkCommandBuffer cmd, VkExtent2D extent,
 
 void draw_window_chrome(VkCommandBuffer cmd, VkExtent2D extent) {
     draw_rect(cmd, extent, 0, 0, (int)extent.width, (int)extent.height,
-              WIN98.surface_r, WIN98.surface_g, WIN98.surface_b);
+              g_style.surface.r, g_style.surface.g, g_style.surface.b);
 
     int outer_x = 6;
     int outer_y = 6;
@@ -186,7 +178,7 @@ void draw_window_chrome(VkCommandBuffer cmd, VkExtent2D extent) {
     int title_w = outer_w - 6;
     int title_h = 20;
     draw_rect(cmd, extent, title_x, title_y, title_w, title_h,
-              WIN98.dialog_blue_r, WIN98.dialog_blue_g, WIN98.dialog_blue_b);
+              g_style.highlight.r, g_style.highlight.g, g_style.highlight.b);
 }
 
 void draw_widget_rect(VkCommandBuffer cmd,
@@ -338,43 +330,43 @@ void draw_radio_border_98(VkCommandBuffer cmd, VkExtent2D extent, int x, int y) 
 
 void draw_radio_dot_98(VkCommandBuffer cmd, VkExtent2D extent, int x, int y) {
     draw_rect(cmd, extent, x + 1, y + 0, 2, 1,
-              WIN98.window_frame_r, WIN98.window_frame_g, WIN98.window_frame_b);
+              g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
     draw_rect(cmd, extent, x + 0, y + 1, 4, 2,
-              WIN98.window_frame_r, WIN98.window_frame_g, WIN98.window_frame_b);
+              g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
     draw_rect(cmd, extent, x + 1, y + 3, 2, 1,
-              WIN98.window_frame_r, WIN98.window_frame_g, WIN98.window_frame_b);
+              g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
 }
 
 void draw_tab_border_98(VkCommandBuffer cmd, VkExtent2D extent, int x, int y, int w, int h) {
     if (w < 6 || h < 6) return;
 
     draw_rect(cmd, extent, x + 2, y, w - 3, 1,
-              WIN98.button_face_r, WIN98.button_face_g, WIN98.button_face_b);
+              g_style.button_face.r, g_style.button_face.g, g_style.button_face.b);
     draw_rect(cmd, extent, x + 2, y + 1, w - 4, 1,
-              WIN98.button_highlight_r, WIN98.button_highlight_g, WIN98.button_highlight_b);
+              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
 
     draw_rect(cmd, extent, x, y + 2, 1, h - 2,
-              WIN98.button_face_r, WIN98.button_face_g, WIN98.button_face_b);
+              g_style.button_face.r, g_style.button_face.g, g_style.button_face.b);
     draw_rect(cmd, extent, x + 1, y + 2, 1, h - 3,
-              WIN98.button_highlight_r, WIN98.button_highlight_g, WIN98.button_highlight_b);
+              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
 
     draw_rect(cmd, extent, x + w - 1, y + 2, 1, h - 2,
-              WIN98.window_frame_r, WIN98.window_frame_g, WIN98.window_frame_b);
+              g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
     draw_rect(cmd, extent, x + w - 2, y + 2, 1, h - 3,
-              WIN98.button_shadow_r, WIN98.button_shadow_g, WIN98.button_shadow_b);
+              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
 }
 
 void draw_status_field_border_98(VkCommandBuffer cmd, VkExtent2D extent,
                                   int x, int y, int w, int h) {
     if (w < 3 || h < 3) return;
     draw_rect(cmd, extent, x, y, w, 1,
-              WIN98.button_shadow_r, WIN98.button_shadow_g, WIN98.button_shadow_b);
+              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
     draw_rect(cmd, extent, x, y, 1, h,
-              WIN98.button_shadow_r, WIN98.button_shadow_g, WIN98.button_shadow_b);
+              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
     draw_rect(cmd, extent, x + w - 1, y, 1, h,
-              WIN98.button_face_r, WIN98.button_face_g, WIN98.button_face_b);
+              g_style.button_face.r, g_style.button_face.g, g_style.button_face.b);
     draw_rect(cmd, extent, x, y + h - 1, w, 1,
-              WIN98.button_face_r, WIN98.button_face_g, WIN98.button_face_b);
+              g_style.button_face.r, g_style.button_face.g, g_style.button_face.b);
 }
 
 void draw_sunken_panel_border_98(VkCommandBuffer cmd, VkExtent2D extent,
@@ -425,7 +417,7 @@ void draw_select_button_98(VkCommandBuffer cmd, VkExtent2D extent, int x, int y)
 bool tree_has_next_sibling(const Widget* row) {
     if (!row || row->kind != WIDGET_TREE_ITEM) return false;
     int level = row->value;
-    for (const Widget* t = row->next; t && t->kind == WIDGET_TREE_ITEM; t = t->next) {
+    for (const Widget* t = row->next_sibling; t && t->kind == WIDGET_TREE_ITEM; t = t->next_sibling) {
         if (t->value < level) break;
         if (t->value == level) return true;
     }
@@ -436,7 +428,7 @@ bool tree_has_prev_sibling(const Widget* block_start, const Widget* row) {
     if (!block_start || !row || row->kind != WIDGET_TREE_ITEM) return false;
     int level = row->value;
     const Widget* prev = NULL;
-    for (const Widget* t = block_start; t && t != row; t = t->next) {
+    for (const Widget* t = block_start; t && t != row; t = t->next_sibling) {
         if (t->kind != WIDGET_TREE_ITEM) break;
         prev = t;
     }
@@ -449,7 +441,7 @@ bool tree_has_prev_sibling(const Widget* block_start, const Widget* row) {
         const Widget* pprev = NULL;
         while (p && p != t) {
             pprev = p;
-            p = p->next;
+            p = p->next_sibling;
         }
         t = pprev;
     }
@@ -462,7 +454,7 @@ bool tree_has_prev_sibling(const Widget* block_start, const Widget* row) {
 const Widget* tree_find_ancestor(const Widget* block_start, const Widget* row,
                                   int ancestor_level) {
     const Widget* ancestor = NULL;
-    for (const Widget* t = block_start; t && t != row; t = t->next) {
+    for (const Widget* t = block_start; t && t != row; t = t->next_sibling) {
         if (t->kind != WIDGET_TREE_ITEM) break;
         if (t->value == ancestor_level) ancestor = t;
     }

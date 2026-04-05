@@ -1,6 +1,6 @@
 #include "progress.h"
 
-RandyosgWidgetId randyosgui_progress_create(RandyosgWindow* win,
+RandyWidgetId randy_progress_create(RandyWindow* win,
                                              const char* label,
                                              int max_value,
                                              int value) {
@@ -14,8 +14,8 @@ RandyosgWidgetId randyosgui_progress_create(RandyosgWindow* win,
     return w->id;
 }
 
-void randyosgui_progress_set_value(RandyosgWindow* win,
-                                    RandyosgWidgetId id,
+void randy_progress_set_value(RandyWindow* win,
+                                    RandyWidgetId id,
                                     int value) {
     if (!win) return;
     Widget* w = widget_find(win, id);
@@ -26,7 +26,7 @@ void randyosgui_progress_set_value(RandyosgWindow* win,
 void draw_progress(RendererContext* r, VkCommandBuffer cmd,
                    const Widget* w, VkExtent2D extent) {
     (void)r;
-    draw_widget_rect(cmd, w, extent, 0.98f, 0.98f, 0.98f);
+    draw_widget_rect(cmd, w, extent, g_style.input_background.r, g_style.input_background.g, g_style.input_background.b);
     draw_bevel(cmd, extent, w->x, w->y, w->w, w->h, true);
 
     int fill_w = 0;
@@ -35,6 +35,6 @@ void draw_progress(RendererContext* r, VkCommandBuffer cmd,
     }
     if (fill_w > 0) {
         draw_rect(cmd, extent, w->x + 2, w->y + 2, fill_w, w->h - 4,
-                  WIN98.dialog_blue_r, WIN98.dialog_blue_g, WIN98.dialog_blue_b);
+                  g_style.highlight.r, g_style.highlight.g, g_style.highlight.b);
     }
 }

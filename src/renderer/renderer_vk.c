@@ -81,9 +81,9 @@ static bool check_validation_layer_support(void) {
 static VkInstance create_instance(void) {
     VkApplicationInfo app = {
         .sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-        .pApplicationName   = "randyosgui",
+        .pApplicationName   = "randy",
         .applicationVersion = VK_MAKE_VERSION(0, 0, 1),
-        .pEngineName        = "randyosgui",
+        .pEngineName        = "randy",
         .engineVersion      = VK_MAKE_VERSION(0, 0, 1),
         .apiVersion         = VK_API_VERSION_1_2,
     };
@@ -125,7 +125,7 @@ static VkInstance create_instance(void) {
     VkResult result = vkCreateInstance(&ci, NULL, &instance);
     free(exts);
     if (result != VK_SUCCESS) {
-        fprintf(stderr, "[randyosgui/renderer] vkCreateInstance failed: %d\n", result);
+        fprintf(stderr, "[randy/renderer] vkCreateInstance failed: %d\n", result);
         return VK_NULL_HANDLE;
     }
     return instance;
@@ -224,7 +224,7 @@ static VkPhysicalDevice pick_physical_device(VkInstance instance,
     uint32_t count = 0;
     vkEnumeratePhysicalDevices(instance, &count, NULL);
     if (count == 0) {
-        fprintf(stderr, "[randyosgui/renderer] no Vulkan-capable GPUs found\n");
+        fprintf(stderr, "[randy/renderer] no Vulkan-capable GPUs found\n");
         return VK_NULL_HANDLE;
     }
     VkPhysicalDevice* devs = malloc(count * sizeof(VkPhysicalDevice));
@@ -243,7 +243,7 @@ static VkPhysicalDevice pick_physical_device(VkInstance instance,
     }
     free(devs);
     if (chosen == VK_NULL_HANDLE) {
-        fprintf(stderr, "[randyosgui/renderer] no suitable physical device found\n");
+        fprintf(stderr, "[randy/renderer] no suitable physical device found\n");
     }
     return chosen;
 }
@@ -284,275 +284,13 @@ static VkDevice create_device(VkPhysicalDevice physical, QueueFamilies qf) {
     VkDevice device = VK_NULL_HANDLE;
     VkResult result = vkCreateDevice(physical, &ci, NULL, &device);
     if (result != VK_SUCCESS) {
-        fprintf(stderr, "[randyosgui/renderer] vkCreateDevice failed: %d\n", result);
+        fprintf(stderr, "[randy/renderer] vkCreateDevice failed: %d\n", result);
         return VK_NULL_HANDLE;
     }
     return device;
 }
 
-/* =========================================================================
- * Swapchain helpers
- * ========================================================================= */
-
-static VkSurfaceFormatKHR choose_surface_format(VkPhysicalDevice dev,
-                                                 VkSurfaceKHR surface) {
-    uint32_t count = 0;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(dev, surface, &count, NULL);
-    VkSurfaceFormatKHR* formats = malloc(count * sizeof(VkSurfaceFormatKHR));
-    VkSurfaceFormatKHR chosen = { VK_FORMAT_B8G8R8A8_SRGB,
-                                   VK_COLOR_SPACE_SRGB_NONLINEAR_KHR };
-    if (!formats) return chosen;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(dev, surface, &count, formats);
-    if (count > 0) chosen = formats[0]; /* fallback to first */
-    for (uint32_t i = 0; i < count; i++) {
-        if (formats[i].format     == VK_FORMAT_B8G8R8A8_SRGB &&
-            formats[i].colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
-            chosen = formats[i]; break;
-        }
-    }
-    free(formats);
-    return chosen;
-}
-
-static VkPresentModeKHR choose_present_mode(VkPhysicalDevice dev,
-                                             VkSurfaceKHR surface) {
-    uint32_t count = 0;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(dev, surface, &count, NULL);
-    VkPresentModeKHR* modes = malloc(count * sizeof(VkPresentModeKHR));
-    VkPresentModeKHR chosen = VK_PRESENT_MODE_FIFO_KHR; /* guaranteed */
-    if (!modes) return chosen;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(dev, surface, &count, modes);
-    for (uint32_t i = 0; i < count; i++) {
-        if (modes[i] == VK_PRESENT_MODE_MAILBOX_KHR) { chosen = modes[i]; break; }
-        if (modes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR) { chosen = modes[i]; }
-    }
-    free(modes);
-    return chosen;
-}
-
-static VkExtent2D choose_extent(const VkSurfaceCapabilitiesKHR* caps,
-                                PlatformWindow* win) {
-    if (caps->currentExtent.width != UINT32_MAX) {
-        return caps->currentExtent;
-    }
-    int w = 0, h = 0;
-    platform_window_get_size(win, &w, &h);
-    VkExtent2D ext = {
-        .width  = (uint32_t)w,
-        .height = (uint32_t)h,
-    };
-    ext.width  = ext.width  < caps->minImageExtent.width  ? caps->minImageExtent.width  : ext.width;
-    ext.width  = ext.width  > caps->maxImageExtent.width  ? caps->maxImageExtent.width  : ext.width;
-    ext.height = ext.height < caps->minImageExtent.height ? caps->minImageExtent.height : ext.height;
-    ext.height = ext.height > caps->maxImageExtent.height ? caps->maxImageExtent.height : ext.height;
-    return ext;
-}
-
-static bool create_swapchain(RendererContext* r) {
-    VkSurfaceCapabilitiesKHR caps;
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(r->physical, r->surface, &caps);
-
-    VkSurfaceFormatKHR fmt  = choose_surface_format(r->physical, r->surface);
-    VkPresentModeKHR   mode = choose_present_mode(r->physical, r->surface);
-    VkExtent2D         ext  = choose_extent(&caps, r->platform_win);
-
-    uint32_t img_count = caps.minImageCount + 1;
-    if (caps.maxImageCount > 0 && img_count > caps.maxImageCount)
-        img_count = caps.maxImageCount;
-
-    uint32_t families[2] = { r->graphics_family, r->present_family };
-    bool same_family = (r->graphics_family == r->present_family);
-
-    VkSwapchainCreateInfoKHR ci = {
-        .sType                 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-        .surface               = r->surface,
-        .minImageCount         = img_count,
-        .imageFormat           = fmt.format,
-        .imageColorSpace       = fmt.colorSpace,
-        .imageExtent           = ext,
-        .imageArrayLayers      = 1,
-        .imageUsage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-        .imageSharingMode      = same_family ? VK_SHARING_MODE_EXCLUSIVE
-                                             : VK_SHARING_MODE_CONCURRENT,
-        .queueFamilyIndexCount = same_family ? 0 : 2,
-        .pQueueFamilyIndices   = same_family ? NULL : families,
-        .preTransform          = caps.currentTransform,
-        .compositeAlpha        = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-        .presentMode           = mode,
-        .clipped               = VK_TRUE,
-        .oldSwapchain          = VK_NULL_HANDLE,
-    };
-
-    if (vkCreateSwapchainKHR(r->device, &ci, NULL, &r->swapchain) != VK_SUCCESS) {
-        fprintf(stderr, "[randyosgui/renderer] vkCreateSwapchainKHR failed\n");
-        return false;
-    }
-
-    r->swapchain_format = fmt.format;
-    r->swapchain_extent = ext;
-
-    vkGetSwapchainImagesKHR(r->device, r->swapchain, &r->image_count, NULL);
-    r->images = malloc(r->image_count * sizeof(VkImage));
-    if (!r->images) return false;
-    vkGetSwapchainImagesKHR(r->device, r->swapchain, &r->image_count, r->images);
-    return true;
-}
-
-static bool create_image_views(RendererContext* r) {
-    r->image_views = malloc(r->image_count * sizeof(VkImageView));
-    if (!r->image_views) return false;
-    for (uint32_t i = 0; i < r->image_count; i++) {
-        VkImageViewCreateInfo ci = {
-            .sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-            .image    = r->images[i],
-            .viewType = VK_IMAGE_VIEW_TYPE_2D,
-            .format   = r->swapchain_format,
-            .components = {
-                VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
-                VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
-            },
-            .subresourceRange = {
-                .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel   = 0, .levelCount = 1,
-                .baseArrayLayer = 0, .layerCount = 1,
-            },
-        };
-        if (vkCreateImageView(r->device, &ci, NULL, &r->image_views[i]) != VK_SUCCESS) {
-            fprintf(stderr, "[randyosgui/renderer] vkCreateImageView[%u] failed\n", i);
-            return false;
-        }
-    }
-    return true;
-}
-
-/* =========================================================================
- * Render pass
- * ========================================================================= */
-
-static bool create_render_pass(RendererContext* r) {
-    VkAttachmentDescription color_att = {
-        .format         = r->swapchain_format,
-        .samples        = VK_SAMPLE_COUNT_1_BIT,
-        .loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR,
-        .storeOp        = VK_ATTACHMENT_STORE_OP_STORE,
-        .stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        .initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED,
-        .finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-    };
-
-    VkAttachmentReference color_ref = {
-        .attachment = 0,
-        .layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-    };
-
-    VkSubpassDescription subpass = {
-        .pipelineBindPoint    = VK_PIPELINE_BIND_POINT_GRAPHICS,
-        .colorAttachmentCount = 1,
-        .pColorAttachments    = &color_ref,
-    };
-
-    VkSubpassDependency dep = {
-        .srcSubpass    = VK_SUBPASS_EXTERNAL,
-        .dstSubpass    = 0,
-        .srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        .dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        .srcAccessMask = 0,
-        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-    };
-
-    VkRenderPassCreateInfo ci = {
-        .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-        .attachmentCount = 1, .pAttachments = &color_att,
-        .subpassCount    = 1, .pSubpasses   = &subpass,
-        .dependencyCount = 1, .pDependencies = &dep,
-    };
-
-    if (vkCreateRenderPass(r->device, &ci, NULL, &r->render_pass) != VK_SUCCESS) {
-        fprintf(stderr, "[randyosgui/renderer] vkCreateRenderPass failed\n");
-        return false;
-    }
-    return true;
-}
-
-/* =========================================================================
- * Framebuffers
- * ========================================================================= */
-
-static bool create_framebuffers(RendererContext* r) {
-    r->framebuffers = malloc(r->image_count * sizeof(VkFramebuffer));
-    if (!r->framebuffers) return false;
-    for (uint32_t i = 0; i < r->image_count; i++) {
-        VkFramebufferCreateInfo ci = {
-            .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-            .renderPass      = r->render_pass,
-            .attachmentCount = 1,
-            .pAttachments    = &r->image_views[i],
-            .width           = r->swapchain_extent.width,
-            .height          = r->swapchain_extent.height,
-            .layers          = 1,
-        };
-        if (vkCreateFramebuffer(r->device, &ci, NULL, &r->framebuffers[i]) != VK_SUCCESS) {
-            fprintf(stderr, "[randyosgui/renderer] vkCreateFramebuffer[%u] failed\n", i);
-            return false;
-        }
-    }
-    return true;
-}
-
-static void destroy_swapchain_dependent(RendererContext* r) {
-    if (!r || !r->device) return;
-
-    if (r->framebuffers) {
-        for (uint32_t i = 0; i < r->image_count; i++) {
-            if (r->framebuffers[i]) vkDestroyFramebuffer(r->device, r->framebuffers[i], NULL);
-        }
-        free(r->framebuffers);
-        r->framebuffers = NULL;
-    }
-
-    if (r->render_pass) {
-        vkDestroyRenderPass(r->device, r->render_pass, NULL);
-        r->render_pass = VK_NULL_HANDLE;
-    }
-
-    if (r->image_views) {
-        for (uint32_t i = 0; i < r->image_count; i++) {
-            if (r->image_views[i]) vkDestroyImageView(r->device, r->image_views[i], NULL);
-        }
-        free(r->image_views);
-        r->image_views = NULL;
-    }
-
-    if (r->images) {
-        free(r->images);
-        r->images = NULL;
-    }
-
-    if (r->swapchain) {
-        vkDestroySwapchainKHR(r->device, r->swapchain, NULL);
-        r->swapchain = VK_NULL_HANDLE;
-    }
-
-    r->image_count = 0;
-}
-
-bool recreate_swapchain_dependent(RendererContext* r) {
-    int fb_w = 0, fb_h = 0;
-    platform_window_get_size(r->platform_win, &fb_w, &fb_h);
-    if (fb_w <= 0 || fb_h <= 0) {
-        return false;
-    }
-
-    vkDeviceWaitIdle(r->device);
-    destroy_swapchain_dependent(r);
-
-    if (!create_swapchain(r)) return false;
-    if (!create_image_views(r)) return false;
-    if (!create_render_pass(r)) return false;
-    if (!create_framebuffers(r)) return false;
-    return true;
-}
+/* Swapchain, image views, render pass, framebuffers are in renderer_vk_swapchain.c */
 
 /* =========================================================================
  * Command pool / buffers
@@ -565,7 +303,7 @@ static bool create_command_objects(RendererContext* r) {
         .queueFamilyIndex = r->graphics_family,
     };
     if (vkCreateCommandPool(r->device, &pool_ci, NULL, &r->cmd_pool) != VK_SUCCESS) {
-        fprintf(stderr, "[randyosgui/renderer] vkCreateCommandPool failed\n");
+        fprintf(stderr, "[randy/renderer] vkCreateCommandPool failed\n");
         return false;
     }
 
@@ -576,7 +314,7 @@ static bool create_command_objects(RendererContext* r) {
         .commandBufferCount = MAX_FRAMES_IN_FLIGHT,
     };
     if (vkAllocateCommandBuffers(r->device, &alloc_info, r->cmd_bufs) != VK_SUCCESS) {
-        fprintf(stderr, "[randyosgui/renderer] vkAllocateCommandBuffers failed\n");
+        fprintf(stderr, "[randy/renderer] vkAllocateCommandBuffers failed\n");
         return false;
     }
     return true;
@@ -596,7 +334,7 @@ static bool create_sync_objects(RendererContext* r) {
         if (vkCreateSemaphore(r->device, &sem_ci, NULL, &r->img_available[i]) != VK_SUCCESS ||
             vkCreateSemaphore(r->device, &sem_ci, NULL, &r->render_done[i])   != VK_SUCCESS ||
             vkCreateFence    (r->device, &fen_ci, NULL, &r->in_flight[i])     != VK_SUCCESS) {
-            fprintf(stderr, "[randyosgui/renderer] sync object creation failed\n");
+            fprintf(stderr, "[randy/renderer] sync object creation failed\n");
             return false;
         }
     }
@@ -608,7 +346,7 @@ static bool create_sync_objects(RendererContext* r) {
  * ========================================================================= */
 
 RendererContext* renderer_create(PlatformWindow* win) {
-    RendererContext* r = (RendererContext*)randyosgui_zalloc(sizeof(RendererContext));
+    RendererContext* r = (RendererContext*)randy_zalloc(sizeof(RendererContext));
     if (!r) return NULL;
     r->platform_win = win;
 
@@ -656,11 +394,6 @@ RendererContext* renderer_create(PlatformWindow* win) {
 
     (void)init_text_system(r);
 
-    {
-        VkPhysicalDeviceProperties props;
-        vkGetPhysicalDeviceProperties(r->physical, &props);
-        fprintf(stderr, "[randyosgui/renderer] initialized on %s\n", props.deviceName);
-    }
     return r;
 
 fail:

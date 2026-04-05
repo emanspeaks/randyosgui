@@ -2,7 +2,7 @@
 #define RENDERER_PRIVATE_H
 
 /*
- * renderer_private.h — shared internals across renderer translation units.
+ * renderer_private.h â€” shared internals across renderer translation units.
  *
  * Included by renderer_vk.c, renderer_draw.c, and renderer_widgets.c.
  * Not part of the public or semi-public library interface.
@@ -21,11 +21,11 @@
 #define MAX_FRAMES_IN_FLIGHT 2
 
 /* =========================================================================
- * DrawCapture — headless draw-op recording used by tests
+ * DrawCapture â€” headless draw-op recording used by tests
  * ========================================================================= */
 
 typedef struct {
-    RandyosgDrawOp* ops;
+    RandyDrawOp* ops;
     size_t          max_ops;
     size_t          count;
     bool            enabled;
@@ -35,21 +35,10 @@ typedef struct {
 extern DrawCapture g_capture;
 
 /* =========================================================================
- * Win98 theme palette
+ * Style / palette â€” all colors and metrics live in g_style (see style.h)
  * ========================================================================= */
 
-typedef struct {
-    float text_r, text_g, text_b;
-    float surface_r, surface_g, surface_b;
-    float button_face_r, button_face_g, button_face_b;
-    float button_highlight_r, button_highlight_g, button_highlight_b;
-    float button_shadow_r, button_shadow_g, button_shadow_b;
-    float window_frame_r, window_frame_g, window_frame_b;
-    float dialog_blue_r, dialog_blue_g, dialog_blue_b;
-} Win98Theme;
-
-/* Defined in renderer_draw.c */
-extern const Win98Theme WIN98;
+#include "../style.h"
 
 /* =========================================================================
  * Queue family indices
@@ -114,14 +103,19 @@ struct RendererContext {
  * or semi-public (randyosgui_internal.h) headers.
  * ========================================================================= */
 
-/* renderer_vk.c → called from renderer_widgets.c */
+/* renderer_vk_swapchain.c â†’ called from renderer_vk.c and renderer_widgets.c */
+bool create_swapchain(RendererContext* r);
+bool create_image_views(RendererContext* r);
+bool create_render_pass(RendererContext* r);
+bool create_framebuffers(RendererContext* r);
+void destroy_swapchain_dependent(RendererContext* r);
 bool recreate_swapchain_dependent(RendererContext* r);
 
-/* renderer_draw.c → called from renderer_vk.c and renderer_widgets.c */
+/* renderer_draw.c â†’ called from renderer_vk.c and renderer_widgets.c */
 bool init_text_system(RendererContext* r);
 void shutdown_text_system(RendererContext* r);
 
-/* Draw primitives — renderer_draw.c → called from renderer_widgets.c */
+/* Draw primitives â€” renderer_draw.c â†’ called from renderer_widgets.c */
 void draw_rect(VkCommandBuffer cmd, VkExtent2D extent,
                int x, int y, int rw, int rh,
                float r, float g, float b);
@@ -151,7 +145,7 @@ void draw_sunken_panel_border_98(VkCommandBuffer cmd, VkExtent2D extent,
                                  int x, int y, int w, int h);
 void draw_select_button_98(VkCommandBuffer cmd, VkExtent2D extent, int x, int y);
 
-/* Tree helpers — renderer_draw.c → called from renderer_widgets.c */
+/* Tree helpers â€” renderer_draw.c â†’ called from renderer_widgets.c */
 bool          tree_has_next_sibling(const Widget* row);
 bool          tree_has_prev_sibling(const Widget* block_start, const Widget* row);
 const Widget* tree_find_ancestor(const Widget* block_start, const Widget* row,

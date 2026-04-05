@@ -5,9 +5,9 @@
 #include "../renderer/renderer_private.h"
 
 /* Public API */
-RandyosgWidgetId randyosgui_sunken_panel_create(RandyosgWindow* win, const char* text);
+RandyWidgetId randy_sunken_panel_create(RandyWindow* win, const char* text);
 
-/* Renderer — draw */
+/* Renderer â€” draw */
 void draw_sunken_panel(RendererContext* r, VkCommandBuffer cmd,
                        const Widget* w, VkExtent2D extent);
 

@@ -1,6 +1,6 @@
 #include "radio.h"
 
-RandyosgWidgetId randyosgui_radio_create(RandyosgWindow* win,
+RandyWidgetId randy_radio_create(RandyWindow* win,
                                           const char* label,
                                           bool selected) {
     if (!win) return 0;
@@ -10,8 +10,8 @@ RandyosgWidgetId randyosgui_radio_create(RandyosgWindow* win,
     return w->id;
 }
 
-void randyosgui_radio_set_selected(RandyosgWindow* win,
-                                    RandyosgWidgetId id,
+void randy_radio_set_selected(RandyWindow* win,
+                                    RandyWidgetId id,
                                     bool selected) {
     if (!win) return;
     Widget* w = widget_find(win, id);
@@ -19,17 +19,17 @@ void randyosgui_radio_set_selected(RandyosgWindow* win,
     w->checked = selected;
 }
 
-bool randyosgui_radio_get_selected(RandyosgWindow* win,
-                                    RandyosgWidgetId id) {
+bool randy_radio_get_selected(RandyWindow* win,
+                                    RandyWidgetId id) {
     if (!win) return false;
     Widget* w = widget_find(win, id);
     if (!w || w->kind != WIDGET_RADIO) return false;
     return w->checked;
 }
 
-void randyosgui_radio_set_callback(RandyosgWindow* win,
-                                    RandyosgWidgetId id,
-                                    RandyosgToggleCallback cb,
+void randy_radio_set_callback(RandyWindow* win,
+                                    RandyWidgetId id,
+                                    RandyToggleCallback cb,
                                     void* userdata) {
     if (!win) return;
     Widget* w = widget_find(win, id);
@@ -54,6 +54,6 @@ void draw_radio(RendererContext* r, VkCommandBuffer cmd,
     text_area.x = w->x + 19;
     text_area.w = w->w - 19;
     draw_widget_text(r, cmd, &text_area, extent, 4,
-                     WIN98.text_r, WIN98.text_g, WIN98.text_b,
-                     WIN98.surface_r, WIN98.surface_g, WIN98.surface_b);
+                     g_style.text.r, g_style.text.g, g_style.text.b,
+                     g_style.surface.r, g_style.surface.g, g_style.surface.b);
 }

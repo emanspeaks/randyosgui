@@ -5,9 +5,9 @@
 #include "../renderer/renderer_private.h"
 
 /* Public API */
-RandyosgWidgetId randyosgui_groupbox_create(RandyosgWindow* win, const char* title);
+RandyWidgetId randy_groupbox_create(RandyWindow* win, const char* title);
 
-/* Renderer — draw */
+/* Renderer â€” draw */
 void draw_groupbox(RendererContext* r, VkCommandBuffer cmd,
                    const Widget* w, VkExtent2D extent);
 

@@ -2,7 +2,7 @@
 #include "../widgets/widgets.h"
 
 /*
- * renderer_widgets.c — widget dispatch loop, frame rendering, and test capture.
+ * renderer_widgets.c â€” widget dispatch loop, frame rendering, and test capture.
  *
  * Covers:
  *   - draw_widgets: per-kind dispatch to draw primitives (renderer_draw.c)
@@ -11,14 +11,58 @@
  */
 
 /* =========================================================================
- * Widget dispatch
+ * Widget dispatch (tree-recursive)
  * ========================================================================= */
 
-static void draw_widgets(RendererContext* r, VkCommandBuffer cmd,
-                         Widget* widgets, VkExtent2D extent) {
+/* Draw a sibling list of widgets (children of one container).
+ * For container widgets (VBOX/HBOX), recurse into their children. */
+static void draw_widget_list(RendererContext* r, VkCommandBuffer cmd,
+                             Widget* list_head, VkExtent2D extent) {
     bool in_tab_strip = false;
 
-    for (Widget* w = widgets; w; w = w->next) {
+    for (Widget* w = list_head; w; w = w->next_sibling) {
+        if (!w->visible) continue;
+
+        if (w->kind == WIDGET_VBOX || w->kind == WIDGET_HBOX) {
+            /* Containers: recurse into children */
+            if (w->first_child) {
+                draw_widget_list(r, cmd, w->first_child, extent);
+            }
+            continue;
+        }
+
+        /* Containers that draw themselves then recurse */
+        if (w->kind == WIDGET_SCROLL_AREA) {
+            draw_scroll_area(r, cmd, w, extent);
+            if (w->first_child) draw_widget_list(r, cmd, w->first_child, extent);
+            continue;
+        }
+        if (w->kind == WIDGET_STACKED) {
+            draw_stacked(r, cmd, w, extent);
+            if (w->first_child) draw_widget_list(r, cmd, w->first_child, extent);
+            continue;
+        }
+        if (w->kind == WIDGET_TAB_WIDGET) {
+            draw_tab_widget(r, cmd, w, extent);
+            if (w->first_child) draw_widget_list(r, cmd, w->first_child, extent);
+            continue;
+        }
+        if (w->kind == WIDGET_ACCORDION) {
+            draw_accordion(r, cmd, w, extent);
+            if (w->first_child && w->checked) draw_widget_list(r, cmd, w->first_child, extent);
+            continue;
+        }
+        if (w->kind == WIDGET_DIALOG) {
+            draw_dialog(r, cmd, w, extent);
+            if (w->first_child) draw_widget_list(r, cmd, w->first_child, extent);
+            continue;
+        }
+        if (w->kind == WIDGET_TOOLBAR) {
+            draw_toolbar(r, cmd, w, extent);
+            if (w->first_child) draw_widget_list(r, cmd, w->first_child, extent);
+            continue;
+        }
+
         if (w->kind == WIDGET_LABEL)        { draw_label(r, cmd, w, extent); continue; }
         if (w->kind == WIDGET_BUTTON)       { draw_button(r, cmd, w, extent); continue; }
         if (w->kind == WIDGET_CHECKBOX)     { draw_checkbox(r, cmd, w, extent); continue; }
@@ -27,16 +71,43 @@ static void draw_widgets(RendererContext* r, VkCommandBuffer cmd,
         if (w->kind == WIDGET_DROPDOWN)     { draw_dropdown(r, cmd, w, extent); continue; }
         if (w->kind == WIDGET_SLIDER)       { draw_slider(r, cmd, w, extent); continue; }
         if (w->kind == WIDGET_PROGRESS)     { draw_progress(r, cmd, w, extent); continue; }
-        if (w->kind == WIDGET_GROUPBOX)     { draw_groupbox(r, cmd, w, extent); continue; }
-        if (w->kind == WIDGET_TAB)          { draw_tab(r, cmd, w, extent, widgets, &in_tab_strip); continue; }
-        if (w->kind == WIDGET_TREE_ITEM)    { draw_tree_item(r, cmd, w, extent, widgets); continue; }
+        if (w->kind == WIDGET_GROUPBOX) {
+            draw_groupbox(r, cmd, w, extent);
+            if (w->first_child) draw_widget_list(r, cmd, w->first_child, extent);
+            continue;
+        }
+        if (w->kind == WIDGET_TAB)          { draw_tab(r, cmd, w, extent, list_head, &in_tab_strip); continue; }
+        if (w->kind == WIDGET_TREE_ITEM)    { draw_tree_item(r, cmd, w, extent, list_head); continue; }
         if (w->kind == WIDGET_TABLE_HEADER) { draw_table_header(r, cmd, w, extent); continue; }
-        if (w->kind == WIDGET_TABLE_ROW)    { draw_table_row(r, cmd, w, extent, widgets); continue; }
+        if (w->kind == WIDGET_TABLE_ROW)    { draw_table_row(r, cmd, w, extent, list_head); continue; }
         if (w->kind == WIDGET_FIELD_BORDER) { draw_field_border(r, cmd, w, extent); continue; }
         if (w->kind == WIDGET_STATUS_FIELD) { draw_status_field(r, cmd, w, extent); continue; }
         if (w->kind == WIDGET_SUNKEN_PANEL) { draw_sunken_panel(r, cmd, w, extent); continue; }
+        if (w->kind == WIDGET_SEPARATOR)    { draw_separator(r, cmd, w, extent); continue; }
+        if (w->kind == WIDGET_SPINBOX)      { draw_spinbox(r, cmd, w, extent); continue; }
+        if (w->kind == WIDGET_COMBOBOX)     { draw_combobox(r, cmd, w, extent); continue; }
+        if (w->kind == WIDGET_TEXTEDIT)     { draw_textedit(r, cmd, w, extent); continue; }
+        if (w->kind == WIDGET_LISTBOX)      { draw_listbox(r, cmd, w, extent); continue; }
+        if (w->kind == WIDGET_MENUBAR) {
+            draw_menubar(r, cmd, w, extent);
+            if (w->first_child) draw_widget_list(r, cmd, w->first_child, extent);
+            continue;
+        }
+        if (w->kind == WIDGET_MENU_ITEM)    { draw_menu_item(r, cmd, w, extent); continue; }
+        if (w->kind == WIDGET_IMAGE)        { draw_image(r, cmd, w, extent); continue; }
+        if (w->kind == WIDGET_TOOLTIP)      { draw_tooltip(r, cmd, w, extent); continue; }
 
         in_tab_strip = false;
+    }
+}
+
+/* Entry point: draw all widgets starting from the root container */
+static void draw_widgets(RendererContext* r, VkCommandBuffer cmd,
+                         Widget* root, VkExtent2D extent) {
+    if (!root) return;
+    /* Root is a VBOX; draw its children */
+    if (root->first_child) {
+        draw_widget_list(r, cmd, root->first_child, extent);
     }
 }
 
@@ -88,7 +159,7 @@ bool renderer_render(RendererContext* r, Widget* widgets) {
     };
     vkBeginCommandBuffer(cmd, &begin_info);
 
-    VkClearValue clear_color = {{{ WIN98.surface_r, WIN98.surface_g, WIN98.surface_b, 1.0f }}};
+    VkClearValue clear_color = {{{ g_style.surface.r, g_style.surface.g, g_style.surface.b, 1.0f }}};
 
     VkRenderPassBeginInfo rp_begin = {
         .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
@@ -144,7 +215,7 @@ bool renderer_render(RendererContext* r, Widget* widgets) {
 size_t renderer_test_capture_widget_draw_ops(const Widget* widget,
                                              uint32_t width,
                                              uint32_t height,
-                                             RandyosgDrawOp* out_ops,
+                                             RandyDrawOp* out_ops,
                                              size_t max_ops) {
     if (!widget || !out_ops || max_ops == 0 || width == 0 || height == 0) return 0;
 
@@ -158,7 +229,8 @@ size_t renderer_test_capture_widget_draw_ops(const Widget* widget,
     g_capture.max_ops = max_ops;
     g_capture.count = 0;
 
-    draw_widgets(&fake, VK_NULL_HANDLE, (Widget*)widget, extent);
+    /* Pass widget as the head of a sibling list for draw dispatch */
+    draw_widget_list(&fake, VK_NULL_HANDLE, (Widget*)widget, extent);
 
     g_capture.enabled = false;
     shutdown_text_system(&fake);

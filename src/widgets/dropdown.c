@@ -1,26 +1,26 @@
 #include "dropdown.h"
 
-RandyosgWidgetId randyosgui_dropdown_create(RandyosgWindow* win,
+RandyWidgetId randy_dropdown_create(RandyWindow* win,
                                              const char* value) {
     if (!win) return 0;
     Widget* w = widget_alloc(win, WIDGET_DROPDOWN, value);
     return w ? w->id : 0;
 }
 
-void randyosgui_dropdown_set_value(RandyosgWindow* win,
-                                    RandyosgWidgetId id,
+void randy_dropdown_set_value(RandyWindow* win,
+                                    RandyWidgetId id,
                                     const char* value) {
     if (!win) return;
     Widget* w = widget_find(win, id);
     if (!w || w->kind != WIDGET_DROPDOWN) return;
     free(w->text);
-    w->text = randyosgui_strdup(value);
+    w->text = randy_strdup(value);
 }
 
 void draw_dropdown(RendererContext* r, VkCommandBuffer cmd,
                    const Widget* w, VkExtent2D extent) {
     draw_widget_rect(cmd, w, extent,
-                     WIN98.button_highlight_r, WIN98.button_highlight_g, WIN98.button_highlight_b);
+                     g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
     draw_sunken_panel_border_98(cmd, extent, w->x, w->y, w->w, w->h);
 
     int bx = w->x + w->w - 18;
@@ -34,6 +34,6 @@ void draw_dropdown(RendererContext* r, VkCommandBuffer cmd,
     text_area.w = w->w - 26;
     if (text_area.w < 1) text_area.w = 1;
     draw_widget_text(r, cmd, &text_area, extent, 3,
-                     WIN98.text_r, WIN98.text_g, WIN98.text_b,
-                     WIN98.button_highlight_r, WIN98.button_highlight_g, WIN98.button_highlight_b);
+                     g_style.text.r, g_style.text.g, g_style.text.b,
+                     g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
 }

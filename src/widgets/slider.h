@@ -5,15 +5,15 @@
 #include "../renderer/renderer_private.h"
 
 /* Public API */
-RandyosgWidgetId randyosgui_slider_create(RandyosgWindow* win, const char* label,
+RandyWidgetId randy_slider_create(RandyWindow* win, const char* label,
                                            int min_value, int max_value, int value);
-void             randyosgui_slider_set_value(RandyosgWindow* win, RandyosgWidgetId id,
+void             randy_slider_set_value(RandyWindow* win, RandyWidgetId id,
                                              int value);
-int              randyosgui_slider_get_value(RandyosgWindow* win, RandyosgWidgetId id);
-void             randyosgui_slider_set_callback(RandyosgWindow* win, RandyosgWidgetId id,
-                                                RandyosgValueCallback cb, void* userdata);
+int              randy_slider_get_value(RandyWindow* win, RandyWidgetId id);
+void             randy_slider_set_callback(RandyWindow* win, RandyWidgetId id,
+                                                RandyValueCallback cb, void* userdata);
 
-/* Renderer — draw */
+/* Renderer â€” draw */
 void draw_slider(RendererContext* r, VkCommandBuffer cmd,
                  const Widget* w, VkExtent2D extent);
 

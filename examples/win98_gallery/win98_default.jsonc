@@ -1,0 +1,92 @@
+// randyosgui style/palette file (JSONC)
+// Edit colors as "#RRGGBB" hex strings, metrics as integers.
+// This file contains the built-in Win98 defaults.
+{
+  // --- Color palette ---
+  // "colors": {
+  //   "text":               "#222222",  // main text foreground
+  //   "surface":            "#C0C0C0",  // window / panel background
+  //   "button_face":        "#DFDFDF",  // raised control surface
+  //   "button_highlight":   "#FFFFFF",  // bevel light edge
+  //   "button_shadow":      "#808080",  // bevel dark edge
+  //   "window_frame":       "#0A0A0A",  // outer border / dark frame
+  //   "highlight":          "#000080",  // selection / active title bar
+  //   "highlight_text":     "#FFFFFF",  // text on highlighted background
+  //   "button_hover":       "#F0F0F0",  // control surface on hover
+  //   "input_background":   "#FAFAFA",  // text field / checkbox inner fill
+  //   "input_border_hover": "#B3B3B3",  // hover ring around input controls
+  //   "tooltip_background": "#FFFFE0",  // tooltip info-window fill
+  //   "tooltip_text":       "#000000"   // tooltip text
+  // },
+  "colors": {
+    "text":               "#000000",  // main text foreground
+    "surface":            "#C0C0C0",  // window / panel background
+    "button_face":        "#DFDFDF",  // raised control surface
+    "button_highlight":   "#FFFFFF",  // bevel light edge
+    "button_shadow":      "#808080",  // bevel dark edge
+    "window_frame":       "#0A0A0A",  // outer border / dark frame
+    "highlight":          "#000080",  // selection / active title bar
+    "highlight_text":     "#FFFFFF",  // text on highlighted background
+    "button_hover":       "#F0F0F0",  // control surface on hover
+    "input_background":   "#FAFAFA",  // text field / checkbox inner fill
+    "input_border_hover": "#B3B3B3",  // hover ring around input controls
+    "tooltip_background": "#FFFFE0",  // tooltip info-window fill
+    "tooltip_text":       "#000000"   // tooltip text
+  },
+
+  // --- Size metrics (pixels) ---
+  "metrics": {
+    "font_size_px":            12,  // UI font pixel size
+    "window_border_width":      6,  // outer frame inset per side
+    "title_bar_height":        20,  // window title bar height
+    "content_padding_x":       14,  // horizontal content inset from chrome
+    "content_padding_top":     38,  // top content inset below title bar
+    "content_bottom_margin":   12,  // bottom margin inside chrome
+    "default_spacing":          6,  // default space between widgets
+
+    // Widget heights
+    "label_height":            18,
+    "button_height":           23,
+    "checkbox_height":         16,
+    "textbox_height":          21,
+    "dropdown_height":         21,
+    "slider_height":           24,
+    "progress_height":         20,
+    "groupbox_height":         54,
+    "tab_height":              22,
+    "tab_width":               96,
+    "tree_item_height":        16,
+    "table_header_height":     17,
+    "table_row_height":        14,
+    "field_border_height":     22,
+    "status_field_height":     20,
+    "sunken_panel_height":     64,
+    "separator_height":         2,
+    "spinbox_height":          21,
+    "combobox_height":         21,
+    "menubar_height":          20,
+    "toolbar_height":          26,
+    "textedit_height":         64,
+    "listbox_height":          80,
+    "image_default_size":      64,
+    "scroll_area_height":     100,
+    "stacked_height":         120,
+    "tab_widget_height":      120,
+    "accordion_header_height": 22,
+    "tooltip_height":          20,
+
+    // Control sub-element sizes
+    "checkbox_box_size":       13,
+    "radio_diameter":          12,
+    "spinbox_button_width":    16,
+    "combobox_button_width":   17,
+    "scrollbar_width":         16,
+
+    // Dialog sub-metrics
+    "dialog_default_width":   300,
+    "dialog_default_height":  180,
+    "dialog_title_bar_height": 18,
+    "dialog_close_button_size": 14,
+    "dialog_padding":           8
+  }
+}

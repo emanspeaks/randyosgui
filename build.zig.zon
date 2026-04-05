@@ -1,6 +1,6 @@
 .{
-    .name = .randyosgui,
-    .fingerprint = 0x85cd48460714309f,
+    .name = .randy,
+    .fingerprint = 0xacab55c58b7fc098,
     .version = "0.0.1",
     .minimum_zig_version = "0.15.2",
     .dependencies = .{},

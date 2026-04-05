@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 
 /*
- * Platform backend — GLFW 3
+ * Platform backend â€” GLFW 3
  *
  * Responsibilities:
  *   - One-time glfwInit / glfwTerminate (reference-counted via window count)
@@ -14,7 +14,7 @@
  */
 
 /* =========================================================================
- * GLFW init reference count — init once, terminate when last window gone
+ * GLFW init reference count â€” init once, terminate when last window gone
  * ========================================================================= */
 
 static int g_glfw_refcount = 0;
@@ -22,7 +22,7 @@ static int g_glfw_refcount = 0;
 static bool glfw_acquire(void) {
     if (g_glfw_refcount == 0) {
         if (!glfwInit()) {
-            fprintf(stderr, "[randyosgui/platform] glfwInit() failed\n");
+            fprintf(stderr, "[randy/platform] glfwInit() failed\n");
             return false;
         }
     }
@@ -46,19 +46,19 @@ static void glfw_release(void) {
 struct PlatformWindow {
     GLFWwindow*  handle;
     VkSurfaceKHR surface;   /* owned by the renderer; stored here for access */
-    VkInstance   instance;  /* borrowed reference — renderer owns lifetime   */
+    VkInstance   instance;  /* borrowed reference â€” renderer owns lifetime   */
 };
 
-PlatformWindow* platform_window_create(const RandyosgWindowDesc* desc) {
+PlatformWindow* platform_window_create(const RandyWindowDesc* desc) {
     if (!glfw_acquire()) return NULL;
 
-    PlatformWindow* win = (PlatformWindow*)randyosgui_zalloc(sizeof(PlatformWindow));
+    PlatformWindow* win = (PlatformWindow*)randy_zalloc(sizeof(PlatformWindow));
     if (!win) {
         glfw_release();
         return NULL;
     }
 
-    /* No OpenGL context — Vulkan will own the surface */
+    /* No OpenGL context â€” Vulkan will own the surface */
     glfwWindowHint(GLFW_CLIENT_API,  GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE,   desc->resizable  ? GLFW_TRUE : GLFW_FALSE);
     glfwWindowHint(GLFW_DECORATED,   desc->decorated  ? GLFW_TRUE : GLFW_FALSE);
@@ -67,7 +67,7 @@ PlatformWindow* platform_window_create(const RandyosgWindowDesc* desc) {
                                    desc->title ? desc->title : "",
                                    NULL, NULL);
     if (!win->handle) {
-        fprintf(stderr, "[randyosgui/platform] glfwCreateWindow() failed\n");
+        fprintf(stderr, "[randy/platform] glfwCreateWindow() failed\n");
         free(win);
         glfw_release();
         return NULL;
@@ -121,7 +121,7 @@ void platform_wake_event_loop(void) {
 }
 
 /* =========================================================================
- * Vulkan surface helpers — called by the renderer
+ * Vulkan surface helpers â€” called by the renderer
  * ========================================================================= */
 
 bool platform_check_vulkan_support(void) {
@@ -138,7 +138,7 @@ bool platform_create_surface(PlatformWindow* win, VkInstance instance,
     VkResult result = glfwCreateWindowSurface(instance, win->handle,
                                               NULL, out_surface);
     if (result != VK_SUCCESS) {
-        fprintf(stderr, "[randyosgui/platform] glfwCreateWindowSurface failed: %d\n",
+        fprintf(stderr, "[randy/platform] glfwCreateWindowSurface failed: %d\n",
                 result);
         return false;
     }

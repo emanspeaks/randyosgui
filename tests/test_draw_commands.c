@@ -12,10 +12,12 @@ static Widget make_widget(WidgetKind kind) {
     w.w = 120;
     w.h = 24;
     w.text = "x";
+    w.visible = true;
+    w.enabled = true;
     return w;
 }
 
-static bool has_op(const RandyosgDrawOp* ops, size_t n,
+static bool has_op(const RandyDrawOp* ops, size_t n,
                    int x, int y, int w, int h,
                    float r, float g, float b) {
     for (size_t i = 0; i < n; i++) {
@@ -33,7 +35,7 @@ void drawspec_checkbox_exact(void) {
     w.checked = true;
     w.hovered = false;
 
-    RandyosgDrawOp ops[512];
+    RandyDrawOp ops[512];
     size_t n = renderer_test_capture_widget_draw_ops(&w, 256, 256, ops, 512);
     assert(n > 0);
 
@@ -48,7 +50,7 @@ void drawspec_radio_exact_contrast(void) {
     w.h = 16;
     w.checked = true;
 
-    RandyosgDrawOp ops[512];
+    RandyDrawOp ops[512];
     size_t n = renderer_test_capture_widget_draw_ops(&w, 256, 256, ops, 512);
     assert(n > 0);
 
@@ -65,7 +67,7 @@ void drawspec_status_field_border(void) {
     w.h = 20;
     w.w = 160;
 
-    RandyosgDrawOp ops[512];
+    RandyDrawOp ops[512];
     size_t n = renderer_test_capture_widget_draw_ops(&w, 256, 256, ops, 512);
     assert(n > 0);
 
@@ -82,7 +84,7 @@ void drawspec_sunken_panel_border(void) {
     w.h = 64;
     w.w = 180;
 
-    RandyosgDrawOp ops[512];
+    RandyDrawOp ops[512];
     size_t n = renderer_test_capture_widget_draw_ops(&w, 320, 320, ops, 512);
     assert(n > 0);
 

@@ -5,14 +5,14 @@
 #include "../renderer/renderer_private.h"
 
 /* Public API */
-RandyosgWidgetId randyosgui_tab_create(RandyosgWindow* win, const char* label, bool active);
-void             randyosgui_tab_set_active(RandyosgWindow* win, RandyosgWidgetId id,
+RandyWidgetId randy_tab_create(RandyWindow* win, const char* label, bool active);
+void             randy_tab_set_active(RandyWindow* win, RandyWidgetId id,
                                            bool active);
-bool             randyosgui_tab_get_active(RandyosgWindow* win, RandyosgWidgetId id);
-void             randyosgui_tab_set_callback(RandyosgWindow* win, RandyosgWidgetId id,
-                                             RandyosgClickCallback cb, void* userdata);
+bool             randy_tab_get_active(RandyWindow* win, RandyWidgetId id);
+void             randy_tab_set_callback(RandyWindow* win, RandyWidgetId id,
+                                             RandyClickCallback cb, void* userdata);
 
-/* Renderer — draw (stateful: tracks the tab-strip underline across consecutive tabs) */
+/* Renderer â€” draw (stateful: tracks the tab-strip underline across consecutive tabs) */
 void draw_tab(RendererContext* r, VkCommandBuffer cmd,
               const Widget* w, VkExtent2D extent,
               const Widget* widgets_head, bool* in_tab_strip);

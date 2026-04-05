@@ -5,11 +5,11 @@
 #include "../renderer/renderer_private.h"
 
 /* Public API */
-RandyosgWidgetId randyosgui_button_create(RandyosgWindow* win, const char* label);
-void             randyosgui_button_set_callback(RandyosgWindow* win, RandyosgWidgetId id,
-                                                RandyosgClickCallback cb, void* userdata);
+RandyWidgetId randy_button_create(RandyWindow* win, const char* label);
+void             randy_button_set_callback(RandyWindow* win, RandyWidgetId id,
+                                                RandyClickCallback cb, void* userdata);
 
-/* Renderer — draw */
+/* Renderer â€” draw */
 void draw_button(RendererContext* r, VkCommandBuffer cmd,
                  const Widget* w, VkExtent2D extent);
 

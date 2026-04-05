@@ -12,6 +12,9 @@ pub fn build(b: *std.Build) void {
 
     const lib_sources: []const []const u8 = &.{
         "src/randyosgui.c",
+        "src/layout.c",
+        "src/input.c",
+        "src/style.c",
         "src/widgets/label.c",
         "src/widgets/button.c",
         "src/widgets/checkbox.c",
@@ -27,8 +30,25 @@ pub fn build(b: *std.Build) void {
         "src/widgets/field_border.c",
         "src/widgets/status_field.c",
         "src/widgets/sunken_panel.c",
+        "src/widgets/vbox.c",
+        "src/widgets/hbox.c",
+        "src/widgets/separator.c",
+        "src/widgets/spinbox.c",
+        "src/widgets/combobox.c",
+        "src/widgets/textedit.c",
+        "src/widgets/listbox.c",
+        "src/widgets/menubar.c",
+        "src/widgets/toolbar.c",
+        "src/widgets/image.c",
+        "src/widgets/scroll_area.c",
+        "src/widgets/stacked.c",
+        "src/widgets/tab_widget.c",
+        "src/widgets/accordion.c",
+        "src/widgets/tooltip.c",
+        "src/widgets/dialog.c",
         "src/platform/platform.c",
         "src/renderer/renderer_vk.c",
+        "src/renderer/renderer_vk_swapchain.c",
         "src/renderer/renderer_draw.c",
         "src/renderer/renderer_widgets.c",
     };
@@ -54,7 +74,7 @@ pub fn build(b: *std.Build) void {
     addThirdPartyIncludePaths(lib_mod, b, target);
 
     const lib = b.addLibrary(.{
-        .name = "randyosgui",
+        .name = "randy",
         .root_module = lib_mod,
         .linkage = .static,
     });
@@ -74,7 +94,7 @@ pub fn build(b: *std.Build) void {
     addPlatformLibs(shared_mod, b, target);
 
     const shared = b.addLibrary(.{
-        .name = "randyosgui",
+        .name = "randy",
         .root_module = shared_mod,
         .linkage = .dynamic,
     });

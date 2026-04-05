@@ -34,6 +34,9 @@
 		},
 		"search.exclude": {
 			"**/third_party/_downloads/**": true
+		},
+		"[jsonc]": {
+			"editor.defaultColorDecorators": "always"
 		}
 	},
 	"extensions": {

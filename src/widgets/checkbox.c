@@ -1,6 +1,6 @@
 #include "checkbox.h"
 
-RandyosgWidgetId randyosgui_checkbox_create(RandyosgWindow* win,
+RandyWidgetId randy_checkbox_create(RandyWindow* win,
                                              const char* label,
                                              bool checked) {
     if (!win) return 0;
@@ -10,8 +10,8 @@ RandyosgWidgetId randyosgui_checkbox_create(RandyosgWindow* win,
     return w->id;
 }
 
-void randyosgui_checkbox_set_checked(RandyosgWindow* win,
-                                      RandyosgWidgetId id,
+void randy_checkbox_set_checked(RandyWindow* win,
+                                      RandyWidgetId id,
                                       bool checked) {
     if (!win) return;
     Widget* w = widget_find(win, id);
@@ -19,17 +19,17 @@ void randyosgui_checkbox_set_checked(RandyosgWindow* win,
     w->checked = checked;
 }
 
-bool randyosgui_checkbox_get_checked(RandyosgWindow* win,
-                                      RandyosgWidgetId id) {
+bool randy_checkbox_get_checked(RandyWindow* win,
+                                      RandyWidgetId id) {
     if (!win) return false;
     Widget* w = widget_find(win, id);
     if (!w || w->kind != WIDGET_CHECKBOX) return false;
     return w->checked;
 }
 
-void randyosgui_checkbox_set_callback(RandyosgWindow* win,
-                                       RandyosgWidgetId id,
-                                       RandyosgToggleCallback cb,
+void randy_checkbox_set_callback(RandyWindow* win,
+                                       RandyWidgetId id,
+                                       RandyToggleCallback cb,
                                        void* userdata) {
     if (!win) return;
     Widget* w = widget_find(win, id);
@@ -44,20 +44,20 @@ void draw_checkbox(RendererContext* r, VkCommandBuffer cmd,
     int cb_x = w->x;
     int cb_y = w->y + ((w->h - box) / 2);
 
-    draw_rect(cmd, extent, cb_x, cb_y, box, box, 0.98f, 0.98f, 0.98f);
+    draw_rect(cmd, extent, cb_x, cb_y, box, box, g_style.input_background.r, g_style.input_background.g, g_style.input_background.b);
     draw_bevel(cmd, extent, cb_x, cb_y, box, box, true);
 
     if (w->hovered) {
-        draw_rect(cmd, extent, cb_x - 1, cb_y - 1, box + 2, 1, 0.70f, 0.70f, 0.70f);
-        draw_rect(cmd, extent, cb_x - 1, cb_y + box, box + 2, 1, 0.70f, 0.70f, 0.70f);
-        draw_rect(cmd, extent, cb_x - 1, cb_y - 1, 1, box + 2, 0.70f, 0.70f, 0.70f);
-        draw_rect(cmd, extent, cb_x + box, cb_y - 1, 1, box + 2, 0.70f, 0.70f, 0.70f);
+        draw_rect(cmd, extent, cb_x - 1, cb_y - 1, box + 2, 1, g_style.input_border_hover.r, g_style.input_border_hover.g, g_style.input_border_hover.b);
+        draw_rect(cmd, extent, cb_x - 1, cb_y + box, box + 2, 1, g_style.input_border_hover.r, g_style.input_border_hover.g, g_style.input_border_hover.b);
+        draw_rect(cmd, extent, cb_x - 1, cb_y - 1, 1, box + 2, g_style.input_border_hover.r, g_style.input_border_hover.g, g_style.input_border_hover.b);
+        draw_rect(cmd, extent, cb_x + box, cb_y - 1, 1, box + 2, g_style.input_border_hover.r, g_style.input_border_hover.g, g_style.input_border_hover.b);
     }
 
     if (w->checked) {
-        float cr = WIN98.window_frame_r;
-        float cg = WIN98.window_frame_g;
-        float cb2 = WIN98.window_frame_b;
+        float cr = g_style.window_frame.r;
+        float cg = g_style.window_frame.g;
+        float cb2 = g_style.window_frame.b;
         int sx = cb_x + 3;
         int sy = cb_y + 3;
 
@@ -76,6 +76,6 @@ void draw_checkbox(RendererContext* r, VkCommandBuffer cmd,
     text_area.x = w->x + 19;
     text_area.w = w->w - 19;
     draw_widget_text(r, cmd, &text_area, extent, 4,
-                     WIN98.text_r, WIN98.text_g, WIN98.text_b,
-                     WIN98.surface_r, WIN98.surface_g, WIN98.surface_b);
+                     g_style.text.r, g_style.text.g, g_style.text.b,
+                     g_style.surface.r, g_style.surface.g, g_style.surface.b);
 }

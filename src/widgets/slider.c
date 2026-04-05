@@ -1,6 +1,6 @@
 #include "slider.h"
 
-RandyosgWidgetId randyosgui_slider_create(RandyosgWindow* win,
+RandyWidgetId randy_slider_create(RandyWindow* win,
                                            const char* label,
                                            int min_value,
                                            int max_value,
@@ -19,8 +19,8 @@ RandyosgWidgetId randyosgui_slider_create(RandyosgWindow* win,
     return w->id;
 }
 
-void randyosgui_slider_set_value(RandyosgWindow* win,
-                                  RandyosgWidgetId id,
+void randy_slider_set_value(RandyWindow* win,
+                                  RandyWidgetId id,
                                   int value) {
     if (!win) return;
     Widget* w = widget_find(win, id);
@@ -28,17 +28,17 @@ void randyosgui_slider_set_value(RandyosgWindow* win,
     w->value = clamp_int(value, w->min_value, w->max_value);
 }
 
-int randyosgui_slider_get_value(RandyosgWindow* win,
-                                 RandyosgWidgetId id) {
+int randy_slider_get_value(RandyWindow* win,
+                                 RandyWidgetId id) {
     if (!win) return 0;
     Widget* w = widget_find(win, id);
     if (!w || w->kind != WIDGET_SLIDER) return 0;
     return w->value;
 }
 
-void randyosgui_slider_set_callback(RandyosgWindow* win,
-                                     RandyosgWidgetId id,
-                                     RandyosgValueCallback cb,
+void randy_slider_set_callback(RandyWindow* win,
+                                     RandyWidgetId id,
+                                     RandyValueCallback cb,
                                      void* userdata) {
     if (!win) return;
     Widget* w = widget_find(win, id);
@@ -55,7 +55,7 @@ void draw_slider(RendererContext* r, VkCommandBuffer cmd,
     if (x1 <= x0) x1 = x0 + 1;
 
     draw_rect(cmd, extent, x0, track_y, x1 - x0, 2,
-              WIN98.window_frame_r, WIN98.window_frame_g, WIN98.window_frame_b);
+              g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
 
     int knob_x = x0;
     if (w->max_value > w->min_value) {
@@ -64,13 +64,13 @@ void draw_slider(RendererContext* r, VkCommandBuffer cmd,
     }
     int knob_y = track_y - 8;
     draw_rect(cmd, extent, knob_x - 5, knob_y, 10, 16,
-              WIN98.button_face_r, WIN98.button_face_g, WIN98.button_face_b);
+              g_style.button_face.r, g_style.button_face.g, g_style.button_face.b);
     draw_bevel(cmd, extent, knob_x - 5, knob_y, 10, 16, w->pressed);
 
     Widget text_area = *w;
     text_area.y = w->y - 16;
     text_area.h = 16;
     draw_widget_text(r, cmd, &text_area, extent, 7,
-                     WIN98.text_r, WIN98.text_g, WIN98.text_b,
-                     WIN98.surface_r, WIN98.surface_g, WIN98.surface_b);
+                     g_style.text.r, g_style.text.g, g_style.text.b,
+                     g_style.surface.r, g_style.surface.g, g_style.surface.b);
 }
