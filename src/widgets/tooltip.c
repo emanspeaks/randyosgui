@@ -1,4 +1,6 @@
 #include "tooltip.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 
 RandyWidgetId randy_tooltip_create(RandyWindow* win, const char* text) {
     if (!win) return 0;
@@ -14,18 +16,10 @@ RandyWidgetId randy_tooltip_create(RandyWindow* win, const char* text) {
 
 void draw_tooltip(RendererContext* r, VkCommandBuffer cmd,
                   const Widget* w, VkExtent2D extent) {
-    /* Classic Win98 tooltip: light yellow background with black border */
+    /* Qt Fusion tooltip: light yellow with 1px gray border */
     draw_rect(cmd, extent, w->x, w->y, w->w, w->h,
               g_style.tooltip_background.r, g_style.tooltip_background.g, g_style.tooltip_background.b);
-    /* Black 1px border */
-    draw_rect(cmd, extent, w->x, w->y, w->w, 1,
-              g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
-    draw_rect(cmd, extent, w->x, w->y + w->h - 1, w->w, 1,
-              g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
-    draw_rect(cmd, extent, w->x, w->y, 1, w->h,
-              g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
-    draw_rect(cmd, extent, w->x + w->w - 1, w->y, 1, w->h,
-              g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
+    draw_bevel(cmd, extent, w->x, w->y, w->w, w->h, false);
 
     Widget text_area = *w;
     text_area.x = w->x + 4;

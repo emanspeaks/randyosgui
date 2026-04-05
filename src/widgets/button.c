@@ -1,4 +1,6 @@
 #include "button.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 
 RandyWidgetId randy_button_create(RandyWindow* win, const char* label) {
     if (!win) return 0;

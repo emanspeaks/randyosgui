@@ -2,7 +2,6 @@
 #define WIDGET_STACKED_H
 
 #include "../randyosgui_internal.h"
-#include "../renderer/renderer_private.h"
 
 /* Public API â€” stacked container shows one child at a time */
 RandyWidgetId randy_stacked_create(RandyWindow* win);

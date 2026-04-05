@@ -1,4 +1,6 @@
 #include "menubar.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 
 RandyWidgetId randy_menubar_create(RandyWindow* win) {
     if (!win) return 0;
@@ -35,29 +37,25 @@ void draw_menubar(RendererContext* r, VkCommandBuffer cmd,
     /* Menubar background strip */
     draw_rect(cmd, extent, w->x, w->y, w->w, w->h,
               g_style.surface.r, g_style.surface.g, g_style.surface.b);
-    /* Bottom edge line */
+    /* Highlight top, shadow bottom */
+    draw_rect(cmd, extent, w->x, w->y, w->w, 1,
+              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
     draw_rect(cmd, extent, w->x, w->y + w->h - 1, w->w, 1,
               g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
 }
 
 void draw_menu_item(RendererContext* r, VkCommandBuffer cmd,
                     const Widget* w, VkExtent2D extent) {
-    /* Background: surface normally, sunken if pressed/hovered */
-    if (w->pressed) {
+    /* Qt Fusion: highlight bg on hover/press, no bevels */
+    if (w->pressed || w->hovered) {
         draw_rect(cmd, extent, w->x, w->y, w->w, w->h,
-                  g_style.surface.r, g_style.surface.g, g_style.surface.b);
-        /* Sunken border */
-        draw_rect(cmd, extent, w->x, w->y, w->w, 1,
-                  g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-        draw_rect(cmd, extent, w->x, w->y, 1, w->h,
-                  g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    } else if (w->hovered) {
-        draw_rect(cmd, extent, w->x, w->y, w->w, w->h,
-                  g_style.surface.r, g_style.surface.g, g_style.surface.b);
-        draw_bevel(cmd, extent, w->x, w->y, w->w, w->h, false);
+                  g_style.button_hover.r, g_style.button_hover.g, g_style.button_hover.b);
     }
 
+    float bg_r = (w->pressed || w->hovered) ? g_style.button_hover.r : g_style.surface.r;
+    float bg_g = (w->pressed || w->hovered) ? g_style.button_hover.g : g_style.surface.g;
+    float bg_b = (w->pressed || w->hovered) ? g_style.button_hover.b : g_style.surface.b;
     draw_widget_text(r, cmd, w, extent, 6,
                      g_style.text.r, g_style.text.g, g_style.text.b,
-                     g_style.surface.r, g_style.surface.g, g_style.surface.b);
+                     bg_r, bg_g, bg_b);
 }

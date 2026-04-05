@@ -1,37 +1,28 @@
 // randyosgui style/palette file (JSONC)
 // Edit colors as "#RRGGBB" hex strings, metrics as integers.
-// This file contains the built-in Win98 defaults.
+// This file contains a VS Code Dark Modern-inspired palette.
 {
   // --- Color palette ---
-  // "colors": {
-  //   "text":               "#222222",  // main text foreground
-  //   "surface":            "#C0C0C0",  // window / panel background
-  //   "button_face":        "#DFDFDF",  // raised control surface
-  //   "button_highlight":   "#FFFFFF",  // bevel light edge
-  //   "button_shadow":      "#808080",  // bevel dark edge
-  //   "window_frame":       "#0A0A0A",  // outer border / dark frame
-  //   "highlight":          "#000080",  // selection / active title bar
-  //   "highlight_text":     "#FFFFFF",  // text on highlighted background
-  //   "button_hover":       "#F0F0F0",  // control surface on hover
-  //   "input_background":   "#FAFAFA",  // text field / checkbox inner fill
-  //   "input_border_hover": "#B3B3B3",  // hover ring around input controls
-  //   "tooltip_background": "#FFFFE0",  // tooltip info-window fill
-  //   "tooltip_text":       "#000000"   // tooltip text
-  // },
   "colors": {
-    "text":               "#000000",  // main text foreground
-    "surface":            "#C0C0C0",  // window / panel background
-    "button_face":        "#DFDFDF",  // raised control surface
-    "button_highlight":   "#FFFFFF",  // bevel light edge
-    "button_shadow":      "#808080",  // bevel dark edge
-    "window_frame":       "#0A0A0A",  // outer border / dark frame
-    "highlight":          "#000080",  // selection / active title bar
-    "highlight_text":     "#FFFFFF",  // text on highlighted background
-    "button_hover":       "#F0F0F0",  // control surface on hover
-    "input_background":   "#FAFAFA",  // text field / checkbox inner fill
-    "input_border_hover": "#B3B3B3",  // hover ring around input controls
-    "tooltip_background": "#FFFFE0",  // tooltip info-window fill
-    "tooltip_text":       "#000000"   // tooltip text
+    "text":               "#CCCCCC",  // foreground
+    "surface":            "#181818",  // sideBar.background
+    "button_face":        "#313131",  // checkbox.background
+    "button_highlight":   "#3C3C3C",  // checkbox.border
+    "button_shadow":      "#010409",  // editorOverviewRuler.border
+    "window_frame":       "#2B2B2B",  // panel.border
+    "highlight":          "#0078D4",  // focusBorder
+    "highlight_text":     "#FFFFFF",  // button.foreground
+    "button_hover":       "#026EC1",  // button.hoverBackground
+    "input_background":   "#313131",  // input.background
+    "input_border_hover": "#0078D4",  // focusBorder
+    "tooltip_background": "#202020",  // editorWidget.background
+    "tooltip_text":       "#CCCCCC"   // foreground
+  },
+
+  // --- Font paths ---
+  "fonts": {
+    "font_sans_path": "C:/Windows/Fonts/tahoma.ttf",
+    "font_mono_path": "third_party/fonts/atkinsonhyperlegiblemono/AtkynsonMonoNerdFontMono-Regular.otf"
   },
 
   // --- Size metrics (pixels) ---

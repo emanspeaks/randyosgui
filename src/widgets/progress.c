@@ -1,4 +1,6 @@
 #include "progress.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 
 RandyWidgetId randy_progress_create(RandyWindow* win,
                                              const char* label,
@@ -26,15 +28,17 @@ void randy_progress_set_value(RandyWindow* win,
 void draw_progress(RendererContext* r, VkCommandBuffer cmd,
                    const Widget* w, VkExtent2D extent) {
     (void)r;
-    draw_widget_rect(cmd, w, extent, g_style.input_background.r, g_style.input_background.g, g_style.input_background.b);
+    /* Qt Fusion: flat background with 1px border */
+    draw_widget_rect(cmd, w, extent,
+                     g_style.input_background.r, g_style.input_background.g, g_style.input_background.b);
     draw_bevel(cmd, extent, w->x, w->y, w->w, w->h, true);
 
     int fill_w = 0;
     if (w->max_value > 0) {
-        fill_w = ((w->w - 4) * w->value) / w->max_value;
+        fill_w = ((w->w - 2) * w->value) / w->max_value;
     }
     if (fill_w > 0) {
-        draw_rect(cmd, extent, w->x + 2, w->y + 2, fill_w, w->h - 4,
+        draw_rect(cmd, extent, w->x + 1, w->y + 1, fill_w, w->h - 2,
                   g_style.highlight.r, g_style.highlight.g, g_style.highlight.b);
     }
 }

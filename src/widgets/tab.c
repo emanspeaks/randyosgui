@@ -1,4 +1,6 @@
 #include "tab.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 
 RandyWidgetId randy_tab_create(RandyWindow* win,
                                         const char* label,
@@ -78,13 +80,26 @@ void draw_tab(RendererContext* r, VkCommandBuffer cmd,
     int ty = w->checked ? (w->y - 2) : w->y;
     int th = w->checked ? (w->h + 2) : w->h;
 
-    draw_rect(cmd, extent, tx, ty, w->w, th,
-              g_style.surface.r, g_style.surface.g, g_style.surface.b);
-    draw_tab_border_98(cmd, extent, tx, ty, w->w, th);
+    /* Raised tab with 3D bevel on top and sides */
+    float tab_bg_r = w->checked ? g_style.surface.r : g_style.button_face.r;
+    float tab_bg_g = w->checked ? g_style.surface.g : g_style.button_face.g;
+    float tab_bg_b = w->checked ? g_style.surface.b : g_style.button_face.b;
+    draw_rect(cmd, extent, tx, ty, w->w, th, tab_bg_r, tab_bg_g, tab_bg_b);
+
+    /* Highlight on top and left */
+    draw_rect(cmd, extent, tx, ty, w->w - 1, 1,
+              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
+    draw_rect(cmd, extent, tx, ty + 1, 1, th - 1,
+              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
+    /* Shadow on right */
+    draw_rect(cmd, extent, tx + w->w - 1, ty, 1, th,
+              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
 
     if (w->checked) {
-        draw_rect(cmd, extent, tx + 2, ty + th - 1, w->w - 4, 2,
-                  g_style.surface.r, g_style.surface.g, g_style.surface.b);
+        /* Active: accent underline and erase bottom border */
+        draw_rect(cmd, extent, tx + 1, ty + 1, w->w - 2, 2,
+                  g_style.highlight.r, g_style.highlight.g, g_style.highlight.b);
+        draw_rect(cmd, extent, tx + 1, ty + th - 1, w->w - 2, 1, tab_bg_r, tab_bg_g, tab_bg_b);
     }
 
     Widget text_area = *w;

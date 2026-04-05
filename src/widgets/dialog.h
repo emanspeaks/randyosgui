@@ -2,7 +2,6 @@
 #define WIDGET_DIALOG_H
 
 #include "../randyosgui_internal.h"
-#include "../renderer/renderer_private.h"
 
 /* Public API â€” modal dialog overlay */
 RandyWidgetId randy_dialog_create(RandyWindow* win, const char* title);

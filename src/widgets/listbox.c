@@ -1,4 +1,6 @@
 #include "listbox.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 
 RandyWidgetId randy_listbox_create(RandyWindow* win,
                                             int num_items,
@@ -37,18 +39,10 @@ void randy_listbox_set_callback(RandyWindow* win, RandyWidgetId id,
 
 void draw_listbox(RendererContext* r, VkCommandBuffer cmd,
                   const Widget* w, VkExtent2D extent) {
-    /* White background with sunken border */
+    /* Qt Fusion: white bg with 1px border */
     draw_rect(cmd, extent, w->x, w->y, w->w, w->h,
-              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
-    /* Sunken border */
-    draw_rect(cmd, extent, w->x, w->y, w->w, 1,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    draw_rect(cmd, extent, w->x, w->y, 1, w->h,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    draw_rect(cmd, extent, w->x + w->w - 1, w->y, 1, w->h,
-              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
-    draw_rect(cmd, extent, w->x, w->y + w->h - 1, w->w, 1,
-              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
+              g_style.input_background.r, g_style.input_background.g, g_style.input_background.b);
+    draw_bevel(cmd, extent, w->x, w->y, w->w, w->h, true);
 
     /* Draw items */
     int item_h = 16;
@@ -76,7 +70,7 @@ void draw_listbox(RendererContext* r, VkCommandBuffer cmd,
             item_text.h = item_h;
             draw_widget_text(r, cmd, &item_text, extent, 2,
                              g_style.text.r, g_style.text.g, g_style.text.b,
-                             g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
+                             g_style.input_background.r, g_style.input_background.g, g_style.input_background.b);
         }
         y += item_h;
     }

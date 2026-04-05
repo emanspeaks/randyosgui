@@ -2,7 +2,6 @@
 #define WIDGET_ACCORDION_H
 
 #include "../randyosgui_internal.h"
-#include "../renderer/renderer_private.h"
 
 /* Public API â€” collapsible section headers */
 RandyWidgetId randy_accordion_create(RandyWindow* win, const char* label, bool expanded);

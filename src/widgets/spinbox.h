@@ -2,7 +2,6 @@
 #define WIDGET_SPINBOX_H
 
 #include "../randyosgui_internal.h"
-#include "../renderer/renderer_private.h"
 
 /* Public API */
 RandyWidgetId randy_spinbox_create(RandyWindow* win, int min_val, int max_val, int initial);

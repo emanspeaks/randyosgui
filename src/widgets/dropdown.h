@@ -2,7 +2,6 @@
 #define WIDGET_DROPDOWN_H
 
 #include "../randyosgui_internal.h"
-#include "../renderer/renderer_private.h"
 
 /* Public API */
 RandyWidgetId randy_dropdown_create(RandyWindow* win, const char* value);

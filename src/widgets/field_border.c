@@ -1,4 +1,6 @@
 #include "field_border.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 
 RandyWidgetId randy_field_border_create(RandyWindow* win,
                                                  const char* text,
@@ -12,17 +14,17 @@ RandyWidgetId randy_field_border_create(RandyWindow* win,
 
 void draw_field_border(RendererContext* r, VkCommandBuffer cmd,
                        const Widget* w, VkExtent2D extent) {
-    float bg = w->readonly ? g_style.surface.r : g_style.button_highlight.r;
-    float gg = w->readonly ? g_style.surface.g : g_style.button_highlight.g;
-    float bb = w->readonly ? g_style.surface.b : g_style.button_highlight.b;
-    draw_widget_rect(cmd, w, extent, bg, gg, bb);
+    float bgr = w->readonly ? g_style.surface.r : g_style.input_background.r;
+    float bgg = w->readonly ? g_style.surface.g : g_style.input_background.g;
+    float bgb = w->readonly ? g_style.surface.b : g_style.input_background.b;
+    draw_widget_rect(cmd, w, extent, bgr, bgg, bgb);
     draw_bevel(cmd, extent, w->x, w->y, w->w, w->h, true);
     Widget text_area = *w;
-    text_area.x += 2;
+    text_area.x += 4;
     text_area.y += 2;
-    text_area.w -= 4;
+    text_area.w -= 8;
     text_area.h -= 4;
     draw_widget_text(r, cmd, &text_area, extent, 3,
                      g_style.text.r, g_style.text.g, g_style.text.b,
-                     bg, gg, bb);
+                     bgr, bgg, bgb);
 }

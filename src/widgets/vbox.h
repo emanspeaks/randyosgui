@@ -2,7 +2,6 @@
 #define RANDY_WIDGET_VBOX_H
 
 #include "../randyosgui_internal.h"
-#include "../renderer/renderer_private.h"
 
 /* Public API is in randyosgui.h (randy_vbox_create, etc.) */
 

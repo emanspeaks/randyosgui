@@ -1,4 +1,6 @@
 #include "spinbox.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 #include <stdio.h>
 
 RandyWidgetId randy_spinbox_create(RandyWindow* win,
@@ -50,19 +52,10 @@ void draw_spinbox(RendererContext* r, VkCommandBuffer cmd,
     int text_w = w->w - btn_w;
     if (text_w < 8) text_w = 8;
 
-    /* Text field area â€” sunken border */
+    /* Text field area — sunken bevel */
     draw_rect(cmd, extent, w->x, w->y, text_w, w->h,
               g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
-    /* Top/left dark border */
-    draw_rect(cmd, extent, w->x, w->y, text_w, 1,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    draw_rect(cmd, extent, w->x, w->y, 1, w->h,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    /* Bottom/right light border */
-    draw_rect(cmd, extent, w->x + text_w - 1, w->y, 1, w->h,
-              g_style.surface.r, g_style.surface.g, g_style.surface.b);
-    draw_rect(cmd, extent, w->x, w->y + w->h - 1, text_w, 1,
-              g_style.surface.r, g_style.surface.g, g_style.surface.b);
+    draw_bevel(cmd, extent, w->x, w->y, text_w, w->h, true);
 
     /* Draw the value text */
     Widget text_area = *w;

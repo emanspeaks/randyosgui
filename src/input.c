@@ -117,6 +117,38 @@ void update_window_input_and_clicks(RandyWindow* win) {
     }
 
     if (win->prev_mouse_down && !win->mouse_down) {
+        /* Tab widget header click detection (synthesized tab headers) */
+        for (Widget* tw = widget_next_depth_first(win->root, NULL); tw;
+             tw = widget_next_depth_first(win->root, tw)) {
+            if (tw->kind != WIDGET_TAB_WIDGET || !tw->visible) continue;
+            double mx = win->mouse_x, my = win->mouse_y;
+            int tab_h = 22;
+            if (my < (double)tw->y || my >= (double)(tw->y + tab_h)) continue;
+            int tab_x = tw->x;
+            int idx = 0;
+            for (Widget* page = tw->first_child; page; page = page->next_sibling) {
+                int tab_w = 80;
+                if (page->text) {
+                    int approx = 16 + ((int)strlen(page->text) * 7);
+                    if (approx > tab_w) tab_w = approx;
+                }
+                if (mx >= (double)tab_x && mx < (double)(tab_x + tab_w)) {
+                    /* Switch to this page */
+                    int i = 0;
+                    for (Widget* p = tw->first_child; p; p = p->next_sibling) {
+                        p->visible = (i == idx);
+                        i++;
+                    }
+                    tw->value = idx;
+                    win->needs_layout = true;
+                    win->needs_render = true;
+                    break;
+                }
+                tab_x += tab_w - 1;
+                idx++;
+            }
+        }
+
         if (win->active_id != 0 && win->active_id == win->hot_id) {
             Widget* w = widget_find(win, win->active_id);
             if (w && w->kind == WIDGET_BUTTON && w->click_cb) {

@@ -2,7 +2,6 @@
 #define WIDGET_IMAGE_H
 
 #include "../randyosgui_internal.h"
-#include "../renderer/renderer_private.h"
 
 /* Public API */
 RandyWidgetId randy_image_create(RandyWindow* win, int width, int height);

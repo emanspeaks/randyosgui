@@ -1,4 +1,6 @@
 #include "table.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 
 RandyWidgetId randy_table_header_create(RandyWindow* win,
                                                  int num_cols,
@@ -58,8 +60,9 @@ void draw_table_header(RendererContext* r, VkCommandBuffer cmd,
     int cx = w->x;
     for (int col = 0; col < w->num_cells; col++) {
         int cw = w->col_widths[col];
+        /* Raised header cell with 3D bevel */
         draw_rect(cmd, extent, cx, w->y, cw, w->h,
-                  g_style.surface.r, g_style.surface.g, g_style.surface.b);
+                  g_style.button_face.r, g_style.button_face.g, g_style.button_face.b);
         draw_bevel(cmd, extent, cx, w->y, cw, w->h, false);
         if (r->font_sans && w->cells[col] && w->cells[col][0]) {
             Widget clip = *w;
@@ -69,7 +72,7 @@ void draw_table_header(RendererContext* r, VkCommandBuffer cmd,
                            s, s + strlen(s),
                            cx + 6, w->y + (w->h / 2) + 4,
                            g_style.text.r, g_style.text.g, g_style.text.b,
-                           g_style.surface.r, g_style.surface.g, g_style.surface.b);
+                           g_style.button_face.r, g_style.button_face.g, g_style.button_face.b);
         }
         cx += cw;
     }
@@ -81,9 +84,9 @@ void draw_table_row(RendererContext* r, VkCommandBuffer cmd,
     float bg_r, bg_g, bg_b, fg_r, fg_g, fg_b;
     if (w->checked) {
         bg_r = g_style.highlight.r; bg_g = g_style.highlight.g; bg_b = g_style.highlight.b;
-        fg_r = 1.0f; fg_g = 1.0f; fg_b = 1.0f;
+        fg_r = g_style.highlight_text.r; fg_g = g_style.highlight_text.g; fg_b = g_style.highlight_text.b;
     } else {
-        bg_r = 1.0f; bg_g = 1.0f; bg_b = 1.0f;
+        bg_r = g_style.input_background.r; bg_g = g_style.input_background.g; bg_b = g_style.input_background.b;
         fg_r = g_style.text.r; fg_g = g_style.text.g; fg_b = g_style.text.b;
     }
     draw_widget_rect(cmd, w, extent, bg_r, bg_g, bg_b);

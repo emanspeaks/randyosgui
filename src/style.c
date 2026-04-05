@@ -30,35 +30,41 @@ static void style_global_init(void) {
 }
 
 /* =========================================================================
- * Win98 defaults
+ * Dark Modern defaults (VS Code Dark Modern-inspired)
  * ========================================================================= */
 
 static void style_set_defaults_impl(RandyStyle* s) {
     if (!s) return;
 
-    /* Colors â€” classic Windows 98 palette */
-    s->text               = (RandyColor){ 0.133f, 0.133f, 0.133f };
-    s->surface            = (RandyColor){ 0.753f, 0.753f, 0.753f };
-    s->button_face        = (RandyColor){ 0.875f, 0.875f, 0.875f };
-    s->button_highlight   = (RandyColor){ 1.000f, 1.000f, 1.000f };
-    s->button_shadow      = (RandyColor){ 0.502f, 0.502f, 0.502f };
-    s->window_frame       = (RandyColor){ 0.039f, 0.039f, 0.039f };
-    s->highlight          = (RandyColor){ 0.000f, 0.000f, 0.502f };
-    s->highlight_text     = (RandyColor){ 1.000f, 1.000f, 1.000f };
-    s->button_hover       = (RandyColor){ 0.940f, 0.940f, 0.940f };
-    s->input_background   = (RandyColor){ 0.980f, 0.980f, 0.980f };
-    s->input_border_hover = (RandyColor){ 0.700f, 0.700f, 0.700f };
-    s->tooltip_background = (RandyColor){ 1.000f, 1.000f, 0.878f };
-    s->tooltip_text       = (RandyColor){ 0.000f, 0.000f, 0.000f };
+    /* Colors — VS Code Dark Modern palette */
+    s->text               = (RandyColor){ 0.800f, 0.800f, 0.800f };  /* #CCCCCC  foreground           */
+    s->surface            = (RandyColor){ 0.094f, 0.094f, 0.094f };  /* #181818  sideBar.background    */
+    s->button_face        = (RandyColor){ 0.192f, 0.192f, 0.192f };  /* #313131  checkbox.background   */
+    s->button_highlight   = (RandyColor){ 0.235f, 0.235f, 0.235f };  /* #3C3C3C  checkbox.border       */
+    s->button_shadow      = (RandyColor){ 0.004f, 0.016f, 0.035f };  /* #010409  overview ruler border */
+    s->window_frame       = (RandyColor){ 0.169f, 0.169f, 0.169f };  /* #2B2B2B  panel.border          */
+    s->highlight          = (RandyColor){ 0.000f, 0.471f, 0.831f };  /* #0078D4  focusBorder           */
+    s->highlight_text     = (RandyColor){ 1.000f, 1.000f, 1.000f };  /* #FFFFFF  button.foreground     */
+    s->button_hover       = (RandyColor){ 0.012f, 0.431f, 0.757f };  /* #026EC1  button.hoverBackground*/
+    s->input_background   = (RandyColor){ 0.192f, 0.192f, 0.192f };  /* #313131  input.background      */
+    s->input_border_hover = (RandyColor){ 0.000f, 0.471f, 0.831f };  /* #0078D4  focusBorder           */
+    s->tooltip_background = (RandyColor){ 0.125f, 0.125f, 0.125f };  /* #202020  editorWidget.bg       */
+    s->tooltip_text       = (RandyColor){ 0.800f, 0.800f, 0.800f };  /* #CCCCCC  foreground            */
+
+    /* Font paths */
+    snprintf(s->font_sans_path, sizeof(s->font_sans_path), "%s",
+             "C:/Windows/Fonts/tahoma.ttf");
+    snprintf(s->font_mono_path, sizeof(s->font_mono_path), "%s",
+             "third_party/fonts/atkinsonhyperlegiblemono/AtkynsonMonoNerdFontMono-Regular.otf");
 
     /* Metrics */
     s->font_size_px           = 12;
 
-    s->window_border_width    = 6;
-    s->title_bar_height       = 20;
-    s->content_padding_x      = 14;
-    s->content_padding_top    = 38;
-    s->content_bottom_margin  = 12;
+    s->window_border_width    = 2;
+    s->title_bar_height       = 24;
+    s->content_padding_x      = 8;
+    s->content_padding_top    = 30;
+    s->content_bottom_margin  = 8;
 
     s->default_spacing        = 6;
 
@@ -195,7 +201,7 @@ static const char* parse_number(const char* p, double* out) {
     return (end && end > p) ? end : NULL;
 }
 
-/* Color nameâ†’offset mapping */
+/* Color name offset mapping */
 typedef struct { const char* name; size_t offset; } ColorEntry;
 typedef struct { const char* name; size_t offset; } MetricEntry;
 
@@ -268,6 +274,47 @@ static const MetricEntry s_metrics[] = {
     METRIC_ENTRY(dialog_padding),
 };
 static const size_t s_num_metrics = sizeof(s_metrics) / sizeof(s_metrics[0]);
+
+/* Font path string mapping */
+typedef struct { const char* name; size_t offset; size_t max_len; } FontEntry;
+#define FONT_ENTRY(field) { #field, offsetof(RandyStyle, field), sizeof(((RandyStyle*)0)->field) }
+
+static const FontEntry s_fonts[] = {
+    FONT_ENTRY(font_sans_path),
+    FONT_ENTRY(font_mono_path),
+};
+static const size_t s_num_fonts = sizeof(s_fonts) / sizeof(s_fonts[0]);
+
+/* Parse a "fonts" object section.  p points just after '{'. */
+static const char* parse_fonts_section(const char* p, RandyStyle* style) {
+    while (*p) {
+        p = skip_ws(p);
+        if (*p == '}') { p++; return p; }
+        if (*p == ',') { p++; continue; }
+
+        char key[128];
+        p = parse_string(p, key, sizeof(key));
+        if (!p) return NULL;
+
+        p = skip_ws(p);
+        if (*p != ':') return NULL;
+        p++;
+        p = skip_ws(p);
+
+        char val[256];
+        p = parse_string(p, val, sizeof(val));
+        if (!p) return NULL;
+
+        for (size_t i = 0; i < s_num_fonts; i++) {
+            if (strcmp(key, s_fonts[i].name) == 0) {
+                char* dst = (char*)style + s_fonts[i].offset;
+                snprintf(dst, s_fonts[i].max_len, "%s", val);
+                break;
+            }
+        }
+    }
+    return p;
+}
 
 /* Parse an object section: either "colors" or "metrics".
  * p points just after the '{'.  Returns pointer past '}'. */
@@ -353,8 +400,13 @@ static bool style_load_impl(RandyStyle* out, const char* path) {
 
         if (*p == '{') {
             p++;
-            bool is_colors = (strcmp(key, "colors") == 0);
-            p = parse_section(p, out, is_colors);
+            if (strcmp(key, "colors") == 0) {
+                p = parse_section(p, out, true);
+            } else if (strcmp(key, "fonts") == 0) {
+                p = parse_fonts_section(p, out);
+            } else {
+                p = parse_section(p, out, false);
+            }
             if (!p) break;
         } else {
             /* Top-level scalar â€” skip */
@@ -477,6 +529,17 @@ static bool style_save_impl(const RandyStyle* style, const char* path) {
         fprintf(f, "    \"%s\": \"%s\"", s_colors[i].name, hex);
         if (i + 1 < s_num_colors) fprintf(f, ",");
         fprintf(f, "  // %s\n", s_color_comments[i]);
+    }
+    fprintf(f, "  },\n\n");
+
+    /* Fonts section */
+    fprintf(f, "  // --- Font paths ---\n");
+    fprintf(f, "  \"fonts\": {\n");
+    for (size_t i = 0; i < s_num_fonts; i++) {
+        const char* val = (const char*)style + s_fonts[i].offset;
+        fprintf(f, "    \"%s\": \"%s\"", s_fonts[i].name, val);
+        if (i + 1 < s_num_fonts) fprintf(f, ",");
+        fprintf(f, "\n");
     }
     fprintf(f, "  },\n\n");
 

@@ -1,4 +1,6 @@
 #include "separator.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 
 RandyWidgetId randy_separator_create(RandyWindow* win) {
     if (!win) return 0;
@@ -14,7 +16,7 @@ void draw_separator(RendererContext* r, VkCommandBuffer cmd,
                     const Widget* w, VkExtent2D extent) {
     (void)r;
     int mid_y = w->y + w->h / 2;
-    /* Win98-style etched line: shadow on top, highlight below */
+    /* Etched line: shadow + highlight */
     draw_rect(cmd, extent, w->x, mid_y, w->w, 1,
               g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
     draw_rect(cmd, extent, w->x, mid_y + 1, w->w, 1,

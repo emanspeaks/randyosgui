@@ -2,7 +2,6 @@
 #define RANDY_WIDGET_HBOX_H
 
 #include "../randyosgui_internal.h"
-#include "../renderer/renderer_private.h"
 
 /* HBOX is a layout-only container â€” no draw function needed.
  * draw_hbox recurses into children. */

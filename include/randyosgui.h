@@ -490,6 +490,10 @@ typedef struct {
     RandyColor tooltip_background;
     RandyColor tooltip_text;
 
+    /* Font paths */
+    char font_sans_path[256];
+    char font_mono_path[256];
+
     /* Metrics (pixels) */
     int font_size_px;
 

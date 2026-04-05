@@ -1,4 +1,6 @@
 #include "accordion.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 
 #define ACCORDION_HEADER_H 22
 
@@ -43,30 +45,33 @@ bool randy_accordion_get_expanded(RandyWindow* win,
 
 void draw_accordion(RendererContext* r, VkCommandBuffer cmd,
                     const Widget* w, VkExtent2D extent) {
-    /* Header bar */
+    /* Raised header with 3D bevel */
     draw_rect(cmd, extent, w->x, w->y, w->w, ACCORDION_HEADER_H,
-              g_style.surface.r, g_style.surface.g, g_style.surface.b);
+              g_style.button_face.r, g_style.button_face.g, g_style.button_face.b);
     draw_bevel(cmd, extent, w->x, w->y, w->w, ACCORDION_HEADER_H, false);
 
-    /* Expand/collapse indicator */
-    int ix = w->x + 6;
-    int iy = w->y + 7;
-    draw_rect(cmd, extent, ix, iy, 9, 9,
-              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
-    draw_rect(cmd, extent, ix, iy, 9, 1,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    draw_rect(cmd, extent, ix + 8, iy, 1, 9,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    draw_rect(cmd, extent, ix, iy + 8, 9, 1,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    draw_rect(cmd, extent, ix, iy, 1, 9,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    /* Horizontal line (minus) */
-    draw_rect(cmd, extent, ix + 2, iy + 4, 5, 1,
-              g_style.text.r, g_style.text.g, g_style.text.b);
-    /* Vertical line (plus, only when collapsed) */
-    if (!w->checked) {
-        draw_rect(cmd, extent, ix + 4, iy + 2, 1, 5,
+    /* Expand/collapse triangle indicator */
+    int ix = w->x + 8;
+    int iy = w->y + ACCORDION_HEADER_H / 2;
+    if (w->checked) {
+        /* Down-pointing triangle */
+        draw_rect(cmd, extent, ix, iy - 1, 7, 1,
+                  g_style.text.r, g_style.text.g, g_style.text.b);
+        draw_rect(cmd, extent, ix + 1, iy, 5, 1,
+                  g_style.text.r, g_style.text.g, g_style.text.b);
+        draw_rect(cmd, extent, ix + 2, iy + 1, 3, 1,
+                  g_style.text.r, g_style.text.g, g_style.text.b);
+        draw_rect(cmd, extent, ix + 3, iy + 2, 1, 1,
+                  g_style.text.r, g_style.text.g, g_style.text.b);
+    } else {
+        /* Right-pointing triangle */
+        draw_rect(cmd, extent, ix, iy - 3, 1, 7,
+                  g_style.text.r, g_style.text.g, g_style.text.b);
+        draw_rect(cmd, extent, ix + 1, iy - 2, 1, 5,
+                  g_style.text.r, g_style.text.g, g_style.text.b);
+        draw_rect(cmd, extent, ix + 2, iy - 1, 1, 3,
+                  g_style.text.r, g_style.text.g, g_style.text.b);
+        draw_rect(cmd, extent, ix + 3, iy, 1, 1,
                   g_style.text.r, g_style.text.g, g_style.text.b);
     }
 
@@ -77,17 +82,17 @@ void draw_accordion(RendererContext* r, VkCommandBuffer cmd,
     label_area.h = ACCORDION_HEADER_H;
     draw_widget_text(r, cmd, &label_area, extent, 4,
                      g_style.text.r, g_style.text.g, g_style.text.b,
-                     g_style.surface.r, g_style.surface.g, g_style.surface.b);
+                     g_style.button_face.r, g_style.button_face.g, g_style.button_face.b);
 
     /* Content area border when expanded */
     if (w->checked && w->h > ACCORDION_HEADER_H) {
         int cy = w->y + ACCORDION_HEADER_H;
         int ch = w->h - ACCORDION_HEADER_H;
-        draw_rect(cmd, extent, w->x, cy, 1, ch,
-                  g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-        draw_rect(cmd, extent, w->x + w->w - 1, cy, 1, ch,
-                  g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-        draw_rect(cmd, extent, w->x, cy + ch - 1, w->w, 1,
-                  g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
+        float sr = g_style.button_shadow.r;
+        float sg = g_style.button_shadow.g;
+        float sb = g_style.button_shadow.b;
+        draw_rect(cmd, extent, w->x, cy, 1, ch, sr, sg, sb);
+        draw_rect(cmd, extent, w->x + w->w - 1, cy, 1, ch, sr, sg, sb);
+        draw_rect(cmd, extent, w->x, cy + ch - 1, w->w, 1, sr, sg, sb);
     }
 }

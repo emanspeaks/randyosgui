@@ -1,4 +1,6 @@
 #include "checkbox.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 
 RandyWidgetId randy_checkbox_create(RandyWindow* win,
                                              const char* label,
@@ -44,32 +46,38 @@ void draw_checkbox(RendererContext* r, VkCommandBuffer cmd,
     int cb_x = w->x;
     int cb_y = w->y + ((w->h - box) / 2);
 
-    draw_rect(cmd, extent, cb_x, cb_y, box, box, g_style.input_background.r, g_style.input_background.g, g_style.input_background.b);
-    draw_bevel(cmd, extent, cb_x, cb_y, box, box, true);
+    /* Sunken checkbox box */
+    draw_rect(cmd, extent, cb_x, cb_y, box, box,
+              g_style.input_background.r, g_style.input_background.g, g_style.input_background.b);
 
     if (w->hovered) {
-        draw_rect(cmd, extent, cb_x - 1, cb_y - 1, box + 2, 1, g_style.input_border_hover.r, g_style.input_border_hover.g, g_style.input_border_hover.b);
-        draw_rect(cmd, extent, cb_x - 1, cb_y + box, box + 2, 1, g_style.input_border_hover.r, g_style.input_border_hover.g, g_style.input_border_hover.b);
-        draw_rect(cmd, extent, cb_x - 1, cb_y - 1, 1, box + 2, g_style.input_border_hover.r, g_style.input_border_hover.g, g_style.input_border_hover.b);
-        draw_rect(cmd, extent, cb_x + box, cb_y - 1, 1, box + 2, g_style.input_border_hover.r, g_style.input_border_hover.g, g_style.input_border_hover.b);
+        /* Hover: accent border all around */
+        float ar = g_style.input_border_hover.r;
+        float ag = g_style.input_border_hover.g;
+        float ab = g_style.input_border_hover.b;
+        draw_rect(cmd, extent, cb_x, cb_y, box, 1, ar, ag, ab);
+        draw_rect(cmd, extent, cb_x, cb_y + box - 1, box, 1, ar, ag, ab);
+        draw_rect(cmd, extent, cb_x, cb_y, 1, box, ar, ag, ab);
+        draw_rect(cmd, extent, cb_x + box - 1, cb_y, 1, box, ar, ag, ab);
+    } else {
+        draw_bevel(cmd, extent, cb_x, cb_y, box, box, true);
     }
 
     if (w->checked) {
-        float cr = g_style.window_frame.r;
-        float cg = g_style.window_frame.g;
-        float cb2 = g_style.window_frame.b;
+        /* Accent-colored checkmark */
+        float cr = g_style.highlight.r;
+        float cg = g_style.highlight.g;
+        float cb2 = g_style.highlight.b;
         int sx = cb_x + 3;
         int sy = cb_y + 3;
 
-        draw_rect(cmd, extent, sx + 6, sy + 0, 1, 1, cr, cg, cb2);
-        draw_rect(cmd, extent, sx + 5, sy + 1, 2, 1, cr, cg, cb2);
-        draw_rect(cmd, extent, sx + 0, sy + 2, 1, 1, cr, cg, cb2);
-        draw_rect(cmd, extent, sx + 4, sy + 2, 3, 1, cr, cg, cb2);
-        draw_rect(cmd, extent, sx + 0, sy + 3, 2, 1, cr, cg, cb2);
-        draw_rect(cmd, extent, sx + 3, sy + 3, 3, 1, cr, cg, cb2);
-        draw_rect(cmd, extent, sx + 0, sy + 4, 5, 1, cr, cg, cb2);
-        draw_rect(cmd, extent, sx + 1, sy + 5, 3, 1, cr, cg, cb2);
-        draw_rect(cmd, extent, sx + 2, sy + 6, 1, 1, cr, cg, cb2);
+        draw_rect(cmd, extent, sx + 0, sy + 3, 1, 2, cr, cg, cb2);
+        draw_rect(cmd, extent, sx + 1, sy + 4, 1, 2, cr, cg, cb2);
+        draw_rect(cmd, extent, sx + 2, sy + 5, 1, 2, cr, cg, cb2);
+        draw_rect(cmd, extent, sx + 3, sy + 4, 1, 2, cr, cg, cb2);
+        draw_rect(cmd, extent, sx + 4, sy + 3, 1, 2, cr, cg, cb2);
+        draw_rect(cmd, extent, sx + 5, sy + 2, 1, 2, cr, cg, cb2);
+        draw_rect(cmd, extent, sx + 6, sy + 1, 1, 2, cr, cg, cb2);
     }
 
     Widget text_area = *w;

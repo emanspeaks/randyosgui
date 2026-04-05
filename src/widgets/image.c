@@ -1,4 +1,6 @@
 #include "image.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 
 RandyWidgetId randy_image_create(RandyWindow* win, int width, int height) {
     if (!win) return 0;
@@ -14,18 +16,10 @@ RandyWidgetId randy_image_create(RandyWindow* win, int width, int height) {
 void draw_image(RendererContext* r, VkCommandBuffer cmd,
                 const Widget* w, VkExtent2D extent) {
     (void)r;
-    /* Placeholder: sunken panel with white interior */
+    /* Qt Fusion: white interior with 1px border */
     draw_rect(cmd, extent, w->x, w->y, w->w, w->h,
-              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
-    /* Sunken border */
-    draw_rect(cmd, extent, w->x, w->y, w->w, 1,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    draw_rect(cmd, extent, w->x, w->y, 1, w->h,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    draw_rect(cmd, extent, w->x + w->w - 1, w->y, 1, w->h,
-              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
-    draw_rect(cmd, extent, w->x, w->y + w->h - 1, w->w, 1,
-              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
+              g_style.input_background.r, g_style.input_background.g, g_style.input_background.b);
+    draw_bevel(cmd, extent, w->x, w->y, w->w, w->h, true);
 
     /* Crosshatch placeholder pattern */
     for (int dy = 4; dy < w->h - 4; dy += 8) {

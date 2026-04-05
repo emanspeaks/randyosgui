@@ -1,4 +1,6 @@
 #include "label.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 
 RandyWidgetId randy_label_create(RandyWindow* win, const char* text) {
     if (!win) return 0;
@@ -18,8 +20,8 @@ void randy_label_set_text(RandyWindow* win, RandyWidgetId id,
 
 void draw_label(RendererContext* r, VkCommandBuffer cmd,
                 const Widget* w, VkExtent2D extent) {
+    /* Qt Fusion: text on surface, no border */
     draw_widget_rect(cmd, w, extent, g_style.surface.r, g_style.surface.g, g_style.surface.b);
-    draw_bevel(cmd, extent, w->x, w->y, w->w, w->h, true);
     draw_widget_text(r, cmd, w, extent, 6,
                      g_style.text.r, g_style.text.g, g_style.text.b,
                      g_style.surface.r, g_style.surface.g, g_style.surface.b);

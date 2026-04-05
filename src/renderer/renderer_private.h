@@ -38,7 +38,6 @@ extern DrawCapture g_capture;
  * Style / palette â€” all colors and metrics live in g_style (see style.h)
  * ========================================================================= */
 
-#include "../style.h"
 
 /* =========================================================================
  * Queue family indices
@@ -135,15 +134,6 @@ void draw_widget_text(RendererContext* r, VkCommandBuffer cmd, const Widget* w,
                       float tr, float tg, float tb,
                       float br, float bg, float bb);
 int  approx_text_px(const char* s);
-void draw_radio_border_98(VkCommandBuffer cmd, VkExtent2D extent, int x, int y);
-void draw_radio_dot_98(VkCommandBuffer cmd, VkExtent2D extent, int x, int y);
-void draw_tab_border_98(VkCommandBuffer cmd, VkExtent2D extent,
-                        int x, int y, int w, int h);
-void draw_status_field_border_98(VkCommandBuffer cmd, VkExtent2D extent,
-                                 int x, int y, int w, int h);
-void draw_sunken_panel_border_98(VkCommandBuffer cmd, VkExtent2D extent,
-                                 int x, int y, int w, int h);
-void draw_select_button_98(VkCommandBuffer cmd, VkExtent2D extent, int x, int y);
 
 /* Tree helpers â€” renderer_draw.c â†’ called from renderer_widgets.c */
 bool          tree_has_next_sibling(const Widget* row);

@@ -1,4 +1,5 @@
 #include "renderer_private.h"
+#include "../style.h"
 
 /*
  * renderer_draw.c â€” Win98 theme palette, text system, and draw primitives.
@@ -32,11 +33,10 @@ DrawCapture g_capture = {0};
  * ========================================================================= */
 
 bool init_text_system(RendererContext* r) {
-    static const unsigned int UI_FONT_PX = 12;
-    static const char SANS_PATH[] =
-        "third_party/fonts/arimo/ArimoNerdFont-Regular.ttf";
-    static const char MONO_PATH[] =
-        "third_party/fonts/atkinsonhyperlegiblemono/AtkynsonMonoNerdFontMono-Regular.otf";
+    const char* sans_path = g_style.font_sans_path;
+    const char* mono_path = g_style.font_mono_path;
+    unsigned int font_px = (unsigned int)g_style.font_size_px;
+    if (font_px == 0) font_px = 12;
 
     if (FT_Init_FreeType(&r->ft_library) != 0) {
         fprintf(stderr, "[randy/renderer] FreeType init failed; text disabled\n");
@@ -46,8 +46,8 @@ bool init_text_system(RendererContext* r) {
         return false;
     }
 
-    if (FT_New_Face(r->ft_library, SANS_PATH, 0, &r->font_sans) != 0) {
-        fprintf(stderr, "[randy/renderer] failed to load sans font: %s\n", SANS_PATH);
+    if (FT_New_Face(r->ft_library, sans_path, 0, &r->font_sans) != 0) {
+        fprintf(stderr, "[randy/renderer] failed to load sans font: %s\n", sans_path);
         FT_Done_FreeType(r->ft_library);
         r->ft_library = NULL;
         r->font_sans = NULL;
@@ -55,8 +55,8 @@ bool init_text_system(RendererContext* r) {
         return false;
     }
 
-    if (FT_New_Face(r->ft_library, MONO_PATH, 0, &r->font_mono) != 0) {
-        fprintf(stderr, "[randy/renderer] failed to load mono font: %s\n", MONO_PATH);
+    if (FT_New_Face(r->ft_library, mono_path, 0, &r->font_mono) != 0) {
+        fprintf(stderr, "[randy/renderer] failed to load mono font: %s\n", mono_path);
         FT_Done_Face(r->font_sans);
         FT_Done_FreeType(r->ft_library);
         r->ft_library = NULL;
@@ -65,8 +65,8 @@ bool init_text_system(RendererContext* r) {
         return false;
     }
 
-    FT_Set_Pixel_Sizes(r->font_sans, 0, UI_FONT_PX);
-    FT_Set_Pixel_Sizes(r->font_mono, 0, UI_FONT_PX);
+    FT_Set_Pixel_Sizes(r->font_sans, 0, font_px);
+    FT_Set_Pixel_Sizes(r->font_mono, 0, font_px);
 
     return true;
 }
@@ -136,47 +136,57 @@ void draw_rect(VkCommandBuffer cmd,
 
 void draw_bevel(VkCommandBuffer cmd, VkExtent2D extent,
                 int x, int y, int w, int h, bool sunken) {
-    if (w < 3 || h < 3) return;
+    if (w < 5 || h < 5) return;
 
-    float tl_r = sunken ? g_style.window_frame.r : g_style.button_highlight.r;
-    float tl_g = sunken ? g_style.window_frame.g : g_style.button_highlight.g;
-    float tl_b = sunken ? g_style.window_frame.b : g_style.button_highlight.b;
-    float br_r = sunken ? g_style.button_highlight.r : g_style.window_frame.r;
-    float br_g = sunken ? g_style.button_highlight.g : g_style.window_frame.g;
-    float br_b = sunken ? g_style.button_highlight.b : g_style.window_frame.b;
+    /* 2px 3D bevel — graduated highlight/shadow like classic Win32 controls */
+    float hr = g_style.button_highlight.r;
+    float hg = g_style.button_highlight.g;
+    float hb = g_style.button_highlight.b;
+    float sr = g_style.button_shadow.r;
+    float sg = g_style.button_shadow.g;
+    float sb = g_style.button_shadow.b;
+    float dr = g_style.window_frame.r;
+    float dg = g_style.window_frame.g;
+    float db = g_style.window_frame.b;
 
-    float inner_tl_r = sunken ? g_style.button_shadow.r : g_style.button_face.r;
-    float inner_tl_g = sunken ? g_style.button_shadow.g : g_style.button_face.g;
-    float inner_tl_b = sunken ? g_style.button_shadow.b : g_style.button_face.b;
-    float inner_br_r = sunken ? g_style.button_face.r : g_style.button_shadow.r;
-    float inner_br_g = sunken ? g_style.button_face.g : g_style.button_shadow.g;
-    float inner_br_b = sunken ? g_style.button_face.b : g_style.button_shadow.b;
-
-    draw_rect(cmd, extent, x, y, w, 1, tl_r, tl_g, tl_b);
-    draw_rect(cmd, extent, x, y, 1, h, tl_r, tl_g, tl_b);
-    draw_rect(cmd, extent, x + w - 1, y, 1, h, br_r, br_g, br_b);
-    draw_rect(cmd, extent, x, y + h - 1, w, 1, br_r, br_g, br_b);
-
-    draw_rect(cmd, extent, x + 1, y + 1, w - 2, 1, inner_tl_r, inner_tl_g, inner_tl_b);
-    draw_rect(cmd, extent, x + 1, y + 1, 1, h - 2, inner_tl_r, inner_tl_g, inner_tl_b);
-    draw_rect(cmd, extent, x + w - 2, y + 1, 1, h - 2, inner_br_r, inner_br_g, inner_br_b);
-    draw_rect(cmd, extent, x + 1, y + h - 2, w - 2, 1, inner_br_r, inner_br_g, inner_br_b);
+    if (!sunken) {
+        /* Outer highlight (top/left) */
+        draw_rect(cmd, extent, x, y, w - 1, 1, hr, hg, hb);
+        draw_rect(cmd, extent, x, y + 1, 1, h - 1, hr, hg, hb);
+        /* Outer dark (bottom/right) */
+        draw_rect(cmd, extent, x, y + h - 1, w, 1, dr, dg, db);
+        draw_rect(cmd, extent, x + w - 1, y, 1, h, dr, dg, db);
+        /* Inner shadow (bottom/right, inset 1) */
+        draw_rect(cmd, extent, x + 1, y + h - 2, w - 2, 1, sr, sg, sb);
+        draw_rect(cmd, extent, x + w - 2, y + 1, 1, h - 2, sr, sg, sb);
+    } else {
+        /* Outer dark (top/left) */
+        draw_rect(cmd, extent, x, y, w - 1, 1, dr, dg, db);
+        draw_rect(cmd, extent, x, y + 1, 1, h - 1, dr, dg, db);
+        /* Inner shadow (top/left, inset 1) */
+        draw_rect(cmd, extent, x + 1, y + 1, w - 3, 1, sr, sg, sb);
+        draw_rect(cmd, extent, x + 1, y + 2, 1, h - 3, sr, sg, sb);
+        /* Outer highlight (bottom/right) */
+        draw_rect(cmd, extent, x, y + h - 1, w, 1, hr, hg, hb);
+        draw_rect(cmd, extent, x + w - 1, y, 1, h, hr, hg, hb);
+    }
 }
 
 void draw_window_chrome(VkCommandBuffer cmd, VkExtent2D extent) {
     draw_rect(cmd, extent, 0, 0, (int)extent.width, (int)extent.height,
               g_style.surface.r, g_style.surface.g, g_style.surface.b);
 
-    int outer_x = 6;
-    int outer_y = 6;
-    int outer_w = (int)extent.width - 12;
-    int outer_h = (int)extent.height - 12;
-    draw_bevel(cmd, extent, outer_x, outer_y, outer_w, outer_h, false);
+    /* Raised bevel on frame */
+    int w = (int)extent.width;
+    int h = (int)extent.height;
+    draw_bevel(cmd, extent, 0, 0, w, h, false);
 
-    int title_x = outer_x + 3;
-    int title_y = outer_y + 3;
-    int title_w = outer_w - 6;
-    int title_h = 20;
+    /* Title bar */
+    int bw = g_style.window_border_width;
+    int title_x = bw;
+    int title_y = bw;
+    int title_w = w - 2 * bw;
+    int title_h = g_style.title_bar_height;
     draw_rect(cmd, extent, title_x, title_y, title_w, title_h,
               g_style.highlight.r, g_style.highlight.g, g_style.highlight.b);
 }
@@ -290,125 +300,6 @@ int approx_text_px(const char* s) {
 /* =========================================================================
  * Widget-specific draw helpers (98.css faithful transcriptions)
  * ========================================================================= */
-
-void draw_radio_border_98(VkCommandBuffer cmd, VkExtent2D extent, int x, int y) {
-    const float g = 0.502f;
-    const float lg = 0.875f;
-
-    draw_rect(cmd, extent, x + 4, y + 0, 4, 1, g, g, g);
-    draw_rect(cmd, extent, x + 2, y + 1, 2, 1, g, g, g);
-    draw_rect(cmd, extent, x + 8, y + 1, 2, 1, g, g, g);
-    draw_rect(cmd, extent, x + 1, y + 2, 1, 2, g, g, g);
-    draw_rect(cmd, extent, x + 0, y + 4, 1, 4, g, g, g);
-    draw_rect(cmd, extent, x + 1, y + 8, 1, 2, g, g, g);
-
-    draw_rect(cmd, extent, x + 4, y + 1, 4, 1, 0.0f, 0.0f, 0.0f);
-    draw_rect(cmd, extent, x + 2, y + 2, 2, 1, 0.0f, 0.0f, 0.0f);
-    draw_rect(cmd, extent, x + 8, y + 2, 2, 1, 0.0f, 0.0f, 0.0f);
-    draw_rect(cmd, extent, x + 1, y + 3, 1, 5, 0.0f, 0.0f, 0.0f);
-    draw_rect(cmd, extent, x + 2, y + 3, 1, 2, 0.0f, 0.0f, 0.0f);
-
-    draw_rect(cmd, extent, x + 10, y + 3, 1, 1, lg, lg, lg);
-    draw_rect(cmd, extent, x + 10, y + 4, 1, 4, lg, lg, lg);
-    draw_rect(cmd, extent, x + 8,  y + 10, 2, 1, lg, lg, lg);
-    draw_rect(cmd, extent, x + 4,  y + 10, 4, 1, lg, lg, lg);
-    draw_rect(cmd, extent, x + 2,  y + 10, 2, 1, lg, lg, lg);
-
-    draw_rect(cmd, extent, x + 10, y + 2, 1, 2, 1.0f, 1.0f, 1.0f);
-    draw_rect(cmd, extent, x + 11, y + 4, 1, 4, 1.0f, 1.0f, 1.0f);
-    draw_rect(cmd, extent, x + 10, y + 8, 1, 2, 1.0f, 1.0f, 1.0f);
-    draw_rect(cmd, extent, x + 8,  y + 11, 2, 1, 1.0f, 1.0f, 1.0f);
-    draw_rect(cmd, extent, x + 4,  y + 11, 4, 1, 1.0f, 1.0f, 1.0f);
-    draw_rect(cmd, extent, x + 2,  y + 11, 2, 1, 1.0f, 1.0f, 1.0f);
-
-    draw_rect(cmd, extent, x + 3, y + 2, 6, 1, 1.0f, 1.0f, 1.0f);
-    draw_rect(cmd, extent, x + 2, y + 3, 8, 1, 1.0f, 1.0f, 1.0f);
-    draw_rect(cmd, extent, x + 2, y + 4, 8, 4, 1.0f, 1.0f, 1.0f);
-    draw_rect(cmd, extent, x + 2, y + 8, 8, 1, 1.0f, 1.0f, 1.0f);
-    draw_rect(cmd, extent, x + 3, y + 9, 6, 1, 1.0f, 1.0f, 1.0f);
-}
-
-void draw_radio_dot_98(VkCommandBuffer cmd, VkExtent2D extent, int x, int y) {
-    draw_rect(cmd, extent, x + 1, y + 0, 2, 1,
-              g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
-    draw_rect(cmd, extent, x + 0, y + 1, 4, 2,
-              g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
-    draw_rect(cmd, extent, x + 1, y + 3, 2, 1,
-              g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
-}
-
-void draw_tab_border_98(VkCommandBuffer cmd, VkExtent2D extent, int x, int y, int w, int h) {
-    if (w < 6 || h < 6) return;
-
-    draw_rect(cmd, extent, x + 2, y, w - 3, 1,
-              g_style.button_face.r, g_style.button_face.g, g_style.button_face.b);
-    draw_rect(cmd, extent, x + 2, y + 1, w - 4, 1,
-              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
-
-    draw_rect(cmd, extent, x, y + 2, 1, h - 2,
-              g_style.button_face.r, g_style.button_face.g, g_style.button_face.b);
-    draw_rect(cmd, extent, x + 1, y + 2, 1, h - 3,
-              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
-
-    draw_rect(cmd, extent, x + w - 1, y + 2, 1, h - 2,
-              g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
-    draw_rect(cmd, extent, x + w - 2, y + 2, 1, h - 3,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-}
-
-void draw_status_field_border_98(VkCommandBuffer cmd, VkExtent2D extent,
-                                  int x, int y, int w, int h) {
-    if (w < 3 || h < 3) return;
-    draw_rect(cmd, extent, x, y, w, 1,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    draw_rect(cmd, extent, x, y, 1, h,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    draw_rect(cmd, extent, x + w - 1, y, 1, h,
-              g_style.button_face.r, g_style.button_face.g, g_style.button_face.b);
-    draw_rect(cmd, extent, x, y + h - 1, w, 1,
-              g_style.button_face.r, g_style.button_face.g, g_style.button_face.b);
-}
-
-void draw_sunken_panel_border_98(VkCommandBuffer cmd, VkExtent2D extent,
-                                  int x, int y, int w, int h) {
-    if (w < 6 || h < 6) return;
-    draw_rect(cmd, extent, x, y, w - 1, 1, 0.502f, 0.502f, 0.502f);
-    draw_rect(cmd, extent, x, y, 1, h - 1, 0.502f, 0.502f, 0.502f);
-
-    draw_rect(cmd, extent, x + 1, y + 1, w - 3, 1, 0.039f, 0.039f, 0.039f);
-    draw_rect(cmd, extent, x + 1, y + 1, 1, h - 3, 0.039f, 0.039f, 0.039f);
-
-    draw_rect(cmd, extent, x + w - 1, y, 1, h, 1.0f, 1.0f, 1.0f);
-    draw_rect(cmd, extent, x, y + h - 1, w, 1, 1.0f, 1.0f, 1.0f);
-
-    draw_rect(cmd, extent, x + w - 2, y + 1, 1, h - 3, 0.875f, 0.875f, 0.875f);
-    draw_rect(cmd, extent, x + 1, y + h - 2, w - 3, 1, 0.875f, 0.875f, 0.875f);
-}
-
-void draw_select_button_98(VkCommandBuffer cmd, VkExtent2D extent, int x, int y) {
-    const float black = 0.039f;
-    const float white = 1.0f;
-    const float gray  = 0.502f;
-    const float light = 0.875f;
-    const float silver = 0.753f;
-
-    draw_rect(cmd, extent, x + 0,  y + 0,  15, 1,  light,  light,  light);
-    draw_rect(cmd, extent, x + 0,  y + 0,  1,  16, light,  light,  light);
-    draw_rect(cmd, extent, x + 1,  y + 1,  13, 1,  white,  white,  white);
-    draw_rect(cmd, extent, x + 1,  y + 2,  1,  13, white,  white,  white);
-
-    draw_rect(cmd, extent, x + 15, y + 0,  1,  17, black,  black,  black);
-    draw_rect(cmd, extent, x + 0,  y + 16, 16, 1,  black,  black,  black);
-    draw_rect(cmd, extent, x + 14, y + 1,  1,  14, gray,   gray,   gray);
-    draw_rect(cmd, extent, x + 1,  y + 15, 14, 1,  gray,   gray,   gray);
-
-    draw_rect(cmd, extent, x + 2,  y + 2,  12, 13, silver, silver, silver);
-
-    draw_rect(cmd, extent, x + 5,  y + 7,  7,  1,  black,  black,  black);
-    draw_rect(cmd, extent, x + 6,  y + 8,  5,  1,  black,  black,  black);
-    draw_rect(cmd, extent, x + 7,  y + 9,  3,  1,  black,  black,  black);
-    draw_rect(cmd, extent, x + 8,  y + 10, 1,  1,  black,  black,  black);
-}
 
 /* =========================================================================
  * Tree view geometry helpers

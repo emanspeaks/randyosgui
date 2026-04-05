@@ -74,7 +74,7 @@ pub fn build(b: *std.Build) void {
     addThirdPartyIncludePaths(lib_mod, b, target);
 
     const lib = b.addLibrary(.{
-        .name = "randy",
+        .name = "randyosgui",
         .root_module = lib_mod,
         .linkage = .static,
     });
@@ -94,7 +94,7 @@ pub fn build(b: *std.Build) void {
     addPlatformLibs(shared_mod, b, target);
 
     const shared = b.addLibrary(.{
-        .name = "randy",
+        .name = "randyosgui",
         .root_module = shared_mod,
         .linkage = .dynamic,
     });

@@ -1,4 +1,6 @@
 #include "slider.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 
 RandyWidgetId randy_slider_create(RandyWindow* win,
                                            const char* label,
@@ -54,18 +56,31 @@ void draw_slider(RendererContext* r, VkCommandBuffer cmd,
     int x1 = w->x + w->w - 12;
     if (x1 <= x0) x1 = x0 + 1;
 
-    draw_rect(cmd, extent, x0, track_y, x1 - x0, 2,
-              g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
+    /* Sunken groove track */
+    int track_h = 4;
+    int ty = track_y - track_h / 2;
+    draw_rect(cmd, extent, x0, ty, x1 - x0, track_h,
+              g_style.input_background.r, g_style.input_background.g, g_style.input_background.b);
+    draw_bevel(cmd, extent, x0, ty, x1 - x0, track_h, true);
 
+    /* Filled portion in accent color */
     int knob_x = x0;
     if (w->max_value > w->min_value) {
         int range = w->max_value - w->min_value;
         knob_x = x0 + ((w->value - w->min_value) * (x1 - x0)) / range;
     }
-    int knob_y = track_y - 8;
-    draw_rect(cmd, extent, knob_x - 5, knob_y, 10, 16,
+    if (knob_x > x0 + 1) {
+        draw_rect(cmd, extent, x0 + 1, ty + 1, knob_x - x0 - 1, track_h - 2,
+                  g_style.highlight.r, g_style.highlight.g, g_style.highlight.b);
+    }
+
+    /* Raised thumb with 3D bevel */
+    int knob_w = 12;
+    int knob_h = 18;
+    int ky = track_y - knob_h / 2;
+    draw_rect(cmd, extent, knob_x - knob_w / 2, ky, knob_w, knob_h,
               g_style.button_face.r, g_style.button_face.g, g_style.button_face.b);
-    draw_bevel(cmd, extent, knob_x - 5, knob_y, 10, 16, w->pressed);
+    draw_bevel(cmd, extent, knob_x - knob_w / 2, ky, knob_w, knob_h, w->pressed);
 
     Widget text_area = *w;
     text_area.y = w->y - 16;

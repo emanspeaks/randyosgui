@@ -6,7 +6,7 @@
  * ========================================================================= */
 
 #define RANDY_LAYOUT_PADDING_X    g_style.content_padding_x
-#define RANDY_LAYOUT_PADDING_TOP  g_style.title_bar_height
+#define RANDY_LAYOUT_PADDING_TOP  g_style.content_padding_top
 #define RANDY_LAYOUT_SPACING      g_style.default_spacing
 #define RANDY_LAYOUT_BOTTOM_MARGIN g_style.content_bottom_margin
 

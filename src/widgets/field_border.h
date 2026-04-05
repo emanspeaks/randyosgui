@@ -2,7 +2,6 @@
 #define WIDGET_FIELD_BORDER_H
 
 #include "../randyosgui_internal.h"
-#include "../renderer/renderer_private.h"
 
 /* Public API */
 RandyWidgetId randy_field_border_create(RandyWindow* win, const char* text,

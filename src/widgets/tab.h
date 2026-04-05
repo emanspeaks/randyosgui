@@ -2,7 +2,6 @@
 #define WIDGET_TAB_H
 
 #include "../randyosgui_internal.h"
-#include "../renderer/renderer_private.h"
 
 /* Public API */
 RandyWidgetId randy_tab_create(RandyWindow* win, const char* label, bool active);

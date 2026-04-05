@@ -2,7 +2,6 @@
 #define WIDGET_TOOLTIP_H
 
 #include "../randyosgui_internal.h"
-#include "../renderer/renderer_private.h"
 
 /* Public API */
 RandyWidgetId randy_tooltip_create(RandyWindow* win, const char* text);

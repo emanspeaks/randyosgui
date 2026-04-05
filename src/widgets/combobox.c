@@ -1,4 +1,6 @@
 #include "combobox.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 
 RandyWidgetId randy_combobox_create(RandyWindow* win,
                                              const char* selected_text) {
@@ -20,38 +22,29 @@ void randy_combobox_set_callback(RandyWindow* win, RandyWidgetId id,
 
 void draw_combobox(RendererContext* r, VkCommandBuffer cmd,
                    const Widget* w, VkExtent2D extent) {
-    /* Sunken text field */
+    /* Input field with sunken text area + raised dropdown button */
     int btn_w = 17;
     int text_w = w->w - btn_w;
     if (text_w < 8) text_w = 8;
 
+    /* Sunken text field area */
     draw_rect(cmd, extent, w->x, w->y, text_w, w->h,
-              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
-    /* Top/left shadow */
-    draw_rect(cmd, extent, w->x, w->y, text_w, 1,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    draw_rect(cmd, extent, w->x, w->y, 1, w->h,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    /* Bottom/right surface */
-    draw_rect(cmd, extent, w->x + text_w - 1, w->y, 1, w->h,
-              g_style.surface.r, g_style.surface.g, g_style.surface.b);
-    draw_rect(cmd, extent, w->x, w->y + w->h - 1, text_w, 1,
-              g_style.surface.r, g_style.surface.g, g_style.surface.b);
+              g_style.input_background.r, g_style.input_background.g, g_style.input_background.b);
+    draw_bevel(cmd, extent, w->x, w->y, text_w, w->h, true);
 
     /* Text */
     Widget text_area = *w;
     text_area.w = text_w - 4;
-    text_area.x = w->x + 2;
+    text_area.x = w->x + 4;
     draw_widget_text(r, cmd, &text_area, extent, 2,
                      g_style.text.r, g_style.text.g, g_style.text.b,
-                     g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
+                     g_style.input_background.r, g_style.input_background.g, g_style.input_background.b);
 
-    /* Drop-down button */
+    /* Raised dropdown button */
     int bx = w->x + text_w;
     draw_rect(cmd, extent, bx, w->y, btn_w, w->h,
-              g_style.surface.r, g_style.surface.g, g_style.surface.b);
-    draw_bevel(cmd, extent, bx, w->y, btn_w, w->h,
-               w->pressed);
+              g_style.button_face.r, g_style.button_face.g, g_style.button_face.b);
+    draw_bevel(cmd, extent, bx, w->y, btn_w, w->h, false);
 
     /* Down arrow */
     int ax = bx + btn_w / 2;

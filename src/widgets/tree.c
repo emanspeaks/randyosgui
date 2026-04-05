@@ -1,4 +1,6 @@
 #include "tree.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 
 RandyWidgetId randy_tree_item_create(RandyWindow* win,
                                               const char* label,
@@ -37,16 +39,10 @@ void draw_tree_item(RendererContext* r, VkCommandBuffer cmd,
         for (const Widget* t = w->next_sibling; t && t->kind == WIDGET_TREE_ITEM; t = t->next_sibling) {
             block_h = (t->y + t->h + 2) - block_y;
         }
+        /* Sunken tree block border */
         draw_rect(cmd, extent, w->x, block_y, w->w, block_h,
-                  g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
-        draw_rect(cmd, extent, w->x, block_y, w->w, 1,
-                  g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
-        draw_rect(cmd, extent, w->x, block_y + block_h - 1, w->w, 1,
-                  g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
-        draw_rect(cmd, extent, w->x, block_y, 1, block_h,
-                  g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
-        draw_rect(cmd, extent, w->x + w->w - 1, block_y, 1, block_h,
-                  g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
+                  g_style.input_background.r, g_style.input_background.g, g_style.input_background.b);
+        draw_bevel(cmd, extent, w->x, block_y, w->w, block_h, true);
     }
 
     int tree_base_x = w->x + 6;
@@ -107,5 +103,5 @@ void draw_tree_item(RendererContext* r, VkCommandBuffer cmd,
     text_area.w = w->w - (text_area.x - w->x);
     draw_widget_text(r, cmd, &text_area, extent, 4,
                      g_style.text.r, g_style.text.g, g_style.text.b,
-                     g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
+                     g_style.input_background.r, g_style.input_background.g, g_style.input_background.b);
 }

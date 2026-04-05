@@ -1,4 +1,6 @@
 #include "textbox.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 
 RandyWidgetId randy_textbox_create(RandyWindow* win,
                                             const char* value,
@@ -22,12 +24,12 @@ void randy_textbox_set_value(RandyWindow* win,
 
 void draw_textbox(RendererContext* r, VkCommandBuffer cmd,
                   const Widget* w, VkExtent2D extent) {
-    float bg = w->readonly ? g_style.surface.r : g_style.input_background.r;
-    float gg = w->readonly ? g_style.surface.g : g_style.input_background.g;
-    float bb = w->readonly ? g_style.surface.b : g_style.input_background.b;
-    draw_widget_rect(cmd, w, extent, bg, gg, bb);
+    float bgr = w->readonly ? g_style.surface.r : g_style.input_background.r;
+    float bgg = w->readonly ? g_style.surface.g : g_style.input_background.g;
+    float bgb = w->readonly ? g_style.surface.b : g_style.input_background.b;
+    draw_widget_rect(cmd, w, extent, bgr, bgg, bgb);
     draw_bevel(cmd, extent, w->x, w->y, w->w, w->h, true);
     draw_widget_text(r, cmd, w, extent, 4,
                      g_style.text.r, g_style.text.g, g_style.text.b,
-                     bg, gg, bb);
+                     bgr, bgg, bgb);
 }

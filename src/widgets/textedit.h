@@ -2,7 +2,6 @@
 #define WIDGET_TEXTEDIT_H
 
 #include "../randyosgui_internal.h"
-#include "../renderer/renderer_private.h"
 
 /* Public API */
 RandyWidgetId randy_textedit_create(RandyWindow* win, const char* text, bool readonly);

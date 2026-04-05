@@ -2,7 +2,6 @@
 #define WIDGET_TABLE_H
 
 #include "../randyosgui_internal.h"
-#include "../renderer/renderer_private.h"
 
 /* Public API */
 RandyWidgetId randy_table_header_create(RandyWindow* win, int num_cols,

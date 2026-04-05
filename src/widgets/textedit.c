@@ -1,4 +1,6 @@
 #include "textedit.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 
 RandyWidgetId randy_textedit_create(RandyWindow* win,
                                              const char* text,
@@ -24,32 +26,13 @@ void randy_textedit_set_text(RandyWindow* win, RandyWidgetId id,
 
 void draw_textedit(RendererContext* r, VkCommandBuffer cmd,
                    const Widget* w, VkExtent2D extent) {
-    /* White background with sunken border (Win98 edit control style) */
-    float bg_r = w->readonly ? g_style.surface.r : g_style.button_highlight.r;
-    float bg_g = w->readonly ? g_style.surface.g : g_style.button_highlight.g;
-    float bg_b = w->readonly ? g_style.surface.b : g_style.button_highlight.b;
+    /* Qt Fusion: white bg with 1px border */
+    float bg_r = w->readonly ? g_style.surface.r : g_style.input_background.r;
+    float bg_g = w->readonly ? g_style.surface.g : g_style.input_background.g;
+    float bg_b = w->readonly ? g_style.surface.b : g_style.input_background.b;
 
     draw_rect(cmd, extent, w->x, w->y, w->w, w->h, bg_r, bg_g, bg_b);
-
-    /* Sunken border: top/left dark, bottom/right light */
-    draw_rect(cmd, extent, w->x, w->y, w->w, 1,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    draw_rect(cmd, extent, w->x, w->y, 1, w->h,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    draw_rect(cmd, extent, w->x + w->w - 1, w->y, 1, w->h,
-              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
-    draw_rect(cmd, extent, w->x, w->y + w->h - 1, w->w, 1,
-              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
-
-    /* Inner border (double-sunken) */
-    draw_rect(cmd, extent, w->x + 1, w->y + 1, w->w - 2, 1,
-              g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
-    draw_rect(cmd, extent, w->x + 1, w->y + 1, 1, w->h - 2,
-              g_style.window_frame.r, g_style.window_frame.g, g_style.window_frame.b);
-    draw_rect(cmd, extent, w->x + w->w - 2, w->y + 1, 1, w->h - 2,
-              g_style.surface.r, g_style.surface.g, g_style.surface.b);
-    draw_rect(cmd, extent, w->x + 1, w->y + w->h - 2, w->w - 2, 1,
-              g_style.surface.r, g_style.surface.g, g_style.surface.b);
+    draw_bevel(cmd, extent, w->x, w->y, w->w, w->h, true);
 
     /* Draw text starting at top-left with padding */
     Widget text_area = *w;

@@ -39,10 +39,14 @@ void drawspec_checkbox_exact(void) {
     size_t n = renderer_test_capture_widget_draw_ops(&w, 256, 256, ops, 512);
     assert(n > 0);
 
-    /* checkbox box fill */
-    assert(has_op(ops, n, 10, 11, 13, 13, 0.98f, 0.98f, 0.98f));
-    /* checkmark distinctive top-right pixel from 98.css checkmark.svg */
-    assert(has_op(ops, n, 19, 14, 1, 1, 0.039f, 0.039f, 0.039f));
+    /* Dark box fill (input_background #313131) */
+    assert(has_op(ops, n, 10, 11, 13, 13, 0.192f, 0.192f, 0.192f));
+    /* Sunken bevel: outer dark on top (window_frame #2B2B2B, w-1=12) */
+    assert(has_op(ops, n, 10, 11, 12, 1, 0.169f, 0.169f, 0.169f));
+    /* Sunken bevel: inner shadow on top (button_shadow #010409, w-3=10) */
+    assert(has_op(ops, n, 11, 12, 10, 1, 0.004f, 0.016f, 0.035f));
+    /* Accent-colored checkmark leftmost stroke */
+    assert(has_op(ops, n, 13, 17, 1, 2, 0.000f, 0.471f, 0.831f));
 }
 
 void drawspec_radio_exact_contrast(void) {
@@ -54,12 +58,12 @@ void drawspec_radio_exact_contrast(void) {
     size_t n = renderer_test_capture_widget_draw_ops(&w, 256, 256, ops, 512);
     assert(n > 0);
 
-    /* expected dark arc from radio-border.svg (#000) */
-    assert(has_op(ops, n, 14, 13, 4, 1, 0.0f, 0.0f, 0.0f));
-    /* expected white rim */
-    assert(has_op(ops, n, 20, 14, 1, 2, 1.0f, 1.0f, 1.0f));
-    /* center dot */
-    assert(has_op(ops, n, 14, 17, 4, 2, 0.039f, 0.039f, 0.039f));
+    /* Border arc top (button_shadow #010409) */
+    assert(has_op(ops, n, 14, 11, 5, 1, 0.004f, 0.016f, 0.035f));
+    /* Dark fill center (input_background #313131) */
+    assert(has_op(ops, n, 11, 14, 11, 7, 0.192f, 0.192f, 0.192f));
+    /* Accent-colored center dot */
+    assert(has_op(ops, n, 14, 16, 5, 3, 0.000f, 0.471f, 0.831f));
 }
 
 void drawspec_status_field_border(void) {
@@ -71,12 +75,14 @@ void drawspec_status_field_border(void) {
     size_t n = renderer_test_capture_widget_draw_ops(&w, 256, 256, ops, 512);
     assert(n > 0);
 
-    /* top/left button-shadow */
-    assert(has_op(ops, n, 10, 10, 160, 1, 0.502f, 0.502f, 0.502f));
-    assert(has_op(ops, n, 10, 10, 1, 20, 0.502f, 0.502f, 0.502f));
-    /* bottom/right button-face */
-    assert(has_op(ops, n, 169, 10, 1, 20, 0.875f, 0.875f, 0.875f));
-    assert(has_op(ops, n, 10, 29, 160, 1, 0.875f, 0.875f, 0.875f));
+    /* Surface fill (#181818) */
+    assert(has_op(ops, n, 10, 10, 160, 20, 0.094f, 0.094f, 0.094f));
+    /* Sunken bevel: outer dark on top (window_frame #2B2B2B, w-1=159) */
+    assert(has_op(ops, n, 10, 10, 159, 1, 0.169f, 0.169f, 0.169f));
+    /* Sunken bevel: inner shadow on top (button_shadow #010409, w-3=157) */
+    assert(has_op(ops, n, 11, 11, 157, 1, 0.004f, 0.016f, 0.035f));
+    /* Sunken bevel: highlight on bottom (#3C3C3C) */
+    assert(has_op(ops, n, 10, 29, 160, 1, 0.235f, 0.235f, 0.235f));
 }
 
 void drawspec_sunken_panel_border(void) {
@@ -88,7 +94,12 @@ void drawspec_sunken_panel_border(void) {
     size_t n = renderer_test_capture_widget_draw_ops(&w, 320, 320, ops, 512);
     assert(n > 0);
 
-    /* sunken-panel-border.svg outer gray and white opposite edges */
-    assert(has_op(ops, n, 10, 10, 179, 1, 0.502f, 0.502f, 0.502f));
-    assert(has_op(ops, n, 189, 10, 1, 64, 1.0f, 1.0f, 1.0f));
+    /* Input_background fill (#313131) */
+    assert(has_op(ops, n, 10, 10, 180, 64, 0.192f, 0.192f, 0.192f));
+    /* Sunken bevel: outer dark on top (window_frame #2B2B2B, w-1=179) */
+    assert(has_op(ops, n, 10, 10, 179, 1, 0.169f, 0.169f, 0.169f));
+    /* Sunken bevel: inner shadow on top (button_shadow #010409, w-3=177) */
+    assert(has_op(ops, n, 11, 11, 177, 1, 0.004f, 0.016f, 0.035f));
+    /* Sunken bevel: highlight on right (#3C3C3C) */
+    assert(has_op(ops, n, 189, 10, 1, 64, 0.235f, 0.235f, 0.235f));
 }

@@ -1,4 +1,6 @@
 #include "groupbox.h"
+#include "../renderer/renderer_private.h"
+#include "../style.h"
 
 RandyWidgetId randy_groupbox_create(RandyWindow* win,
                                              const char* title) {
@@ -19,29 +21,26 @@ void draw_groupbox(RendererContext* r, VkCommandBuffer cmd,
     int right = w->x + w->w - 1;
     int bottom = w->y + w->h - 1;
 
-    draw_rect(cmd, extent, left, top_y, title_left - left - 2, 1,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    draw_rect(cmd, extent, title_right + 2, top_y, right - title_right - 2, 1,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    draw_rect(cmd, extent, left, top_y + 1, title_left - left - 2, 1,
-              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
-    draw_rect(cmd, extent, title_right + 2, top_y + 1, right - title_right - 2, 1,
-              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
+    /* Etched border with gap for title */
+    float sr = g_style.button_shadow.r;
+    float sg = g_style.button_shadow.g;
+    float sb = g_style.button_shadow.b;
+    float hr = g_style.button_highlight.r;
+    float hg = g_style.button_highlight.g;
+    float hb = g_style.button_highlight.b;
 
-    draw_rect(cmd, extent, left, top_y + 1, 1, bottom - top_y,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    draw_rect(cmd, extent, left + 1, top_y + 2, 1, bottom - top_y - 1,
-              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
-
-    draw_rect(cmd, extent, right - 1, top_y + 1, 1, bottom - top_y,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    draw_rect(cmd, extent, right, top_y + 2, 1, bottom - top_y - 1,
-              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
-
-    draw_rect(cmd, extent, left, bottom - 1, right - left, 1,
-              g_style.button_shadow.r, g_style.button_shadow.g, g_style.button_shadow.b);
-    draw_rect(cmd, extent, left + 1, bottom, right - left, 1,
-              g_style.button_highlight.r, g_style.button_highlight.g, g_style.button_highlight.b);
+    /* Shadow lines (outer) */
+    draw_rect(cmd, extent, left, top_y, title_left - left - 2, 1, sr, sg, sb);
+    draw_rect(cmd, extent, title_right + 2, top_y, right - title_right - 2, 1, sr, sg, sb);
+    draw_rect(cmd, extent, left, top_y + 1, 1, bottom - top_y - 1, sr, sg, sb);
+    draw_rect(cmd, extent, left, bottom, right - left + 1, 1, sr, sg, sb);
+    draw_rect(cmd, extent, right, top_y + 1, 1, bottom - top_y - 1, sr, sg, sb);
+    /* Highlight lines (inner, offset +1) */
+    draw_rect(cmd, extent, left + 1, top_y + 1, title_left - left - 3, 1, hr, hg, hb);
+    draw_rect(cmd, extent, title_right + 2, top_y + 1, right - title_right - 3, 1, hr, hg, hb);
+    draw_rect(cmd, extent, left + 1, top_y + 2, 1, bottom - top_y - 3, hr, hg, hb);
+    draw_rect(cmd, extent, left + 1, bottom - 1, right - left - 1, 1, hr, hg, hb);
+    draw_rect(cmd, extent, right - 1, top_y + 2, 1, bottom - top_y - 3, hr, hg, hb);
 
     Widget text_area = *w;
     text_area.x = title_left;
