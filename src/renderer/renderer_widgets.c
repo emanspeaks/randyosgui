@@ -27,6 +27,7 @@
 #include "../widgets/textbox.h"
 #include "../widgets/textedit.h"
 #include "../widgets/toolbar.h"
+#include "../widgets/epoch.h"
 #include "../widgets/tooltip.h"
 #include "../widgets/tree.h"
 
@@ -125,6 +126,7 @@ static void draw_widget_list(RendererContext* r, VkCommandBuffer cmd,
         if (w->kind == WIDGET_MENU_ITEM)    { draw_menu_item(r, cmd, w, extent); continue; }
         if (w->kind == WIDGET_IMAGE)        { draw_image(r, cmd, w, extent); continue; }
         if (w->kind == WIDGET_TOOLTIP)      { draw_tooltip(r, cmd, w, extent); continue; }
+        if (w->kind == WIDGET_EPOCH)        { draw_epoch(r, cmd, w, extent); continue; }
 
         in_tab_strip = false;
     }

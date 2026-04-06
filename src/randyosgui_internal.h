@@ -55,6 +55,7 @@ typedef enum {
     WIDGET_ACCORDION = 30,
     WIDGET_TOOLTIP = 31,
     WIDGET_DIALOG = 32,
+    WIDGET_EPOCH = 33,
 } WidgetKind;
 
 /* A single widget node in the retained tree */
@@ -102,6 +103,7 @@ typedef struct Widget {
     int                  value;
     int                  min_value;
     int                  max_value;
+    double               epoch_sec;   /* WIDGET_EPOCH: time value in seconds */
 
     /* Layout hints (to be expanded) */
     int                  x, y, w, h;

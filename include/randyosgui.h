@@ -464,6 +464,36 @@ RANDY_API void             randy_dialog_hide(RandyWindow* win,
                                                         RandyWidgetId id);
 
 /* -------------------------------------------------------------------------
+ * Widgets — epoch (time/duration editor with format switching)
+ *
+ * A compound widget that displays and edits a time value in seconds.
+ * Three input formats are available:
+ *   0 = DHMS         (Days, Hours, Minutes, Seconds)
+ *   1 = YMDHMS       (Year, Month, Day, Hour, Minute, Second)
+ *   2 = Y:DOY:HMS    (Year, Day-of-Year, Hour, Minute, Second)
+ * The widget includes an enable checkbox, format radio buttons, and
+ * spinbox-style editors for each time component.
+ * ---------------------------------------------------------------------- */
+
+RANDY_API RandyWidgetId randy_epoch_create(RandyWindow* win,
+                                                         const char* label,
+                                                         double initial_sec);
+RANDY_API void             randy_epoch_set_value(RandyWindow* win,
+                                                            RandyWidgetId id,
+                                                            double sec);
+RANDY_API double           randy_epoch_get_value(RandyWindow* win,
+                                                            RandyWidgetId id);
+RANDY_API void             randy_epoch_set_format(RandyWindow* win,
+                                                             RandyWidgetId id,
+                                                             int fmt);
+RANDY_API int              randy_epoch_get_format(RandyWindow* win,
+                                                             RandyWidgetId id);
+RANDY_API void             randy_epoch_set_callback(RandyWindow* win,
+                                                               RandyWidgetId id,
+                                                               RandyValueCallback cb,
+                                                               void* userdata);
+
+/* -------------------------------------------------------------------------
  * Style / Palette API — JSONC theme system
  *
  * The library ships with Win98-classic defaults.  Apps can optionally load
@@ -537,6 +567,7 @@ typedef struct {
     int tab_widget_height;
     int accordion_header_height;
     int tooltip_height;
+    int epoch_height;
 
     /* Control sub-element sizes */
     int checkbox_box_size;

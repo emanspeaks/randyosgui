@@ -1,4 +1,5 @@
 #include "randyosgui_internal.h"
+#include "widgets/epoch.h"
 
 /* =========================================================================
  * Input / interaction helpers
@@ -11,7 +12,8 @@ static bool widget_is_clickable(const Widget* w) {
                  w->kind == WIDGET_DROPDOWN ||
                  w->kind == WIDGET_SLIDER ||
                  w->kind == WIDGET_TAB ||
-                 w->kind == WIDGET_TABLE_ROW);
+                 w->kind == WIDGET_TABLE_ROW ||
+                 w->kind == WIDGET_EPOCH);
 }
 
 static bool point_in_widget(const Widget* w, double x, double y) {
@@ -191,6 +193,9 @@ void update_window_input_and_clicks(RandyWindow* win) {
                 if (w->click_cb) {
                     w->click_cb(w->id, w->click_userdata);
                 }
+            } else if (w && w->kind == WIDGET_EPOCH) {
+                epoch_handle_click(w, win->mouse_x, win->mouse_y);
+                win->needs_render = true;
             }
         }
         win->active_id = 0;

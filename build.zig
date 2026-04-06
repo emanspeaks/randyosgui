@@ -46,6 +46,7 @@ pub fn build(b: *std.Build) void {
         "src/widgets/accordion.c",
         "src/widgets/tooltip.c",
         "src/widgets/dialog.c",
+        "src/widgets/epoch.c",
         "src/platform/platform.c",
         "src/renderer/renderer_vk.c",
         "src/renderer/renderer_vk_swapchain.c",

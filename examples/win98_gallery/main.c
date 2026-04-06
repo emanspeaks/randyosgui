@@ -176,6 +176,14 @@ int main(void) {
     randy_widget_add_child(win, pg_inp, sep1);
 
     randy_widget_add_child(win, pg_inp,
+        randy_label_create(win, "Epoch editor (45000 sec = 12h 30m):"));
+    RandyWidgetId epoch = randy_epoch_create(win, "Epoch:", 45000.0);
+    randy_widget_add_child(win, pg_inp, epoch);
+
+    RandyWidgetId sep1b = randy_separator_create(win);
+    randy_widget_add_child(win, pg_inp, sep1b);
+
+    randy_widget_add_child(win, pg_inp,
         randy_label_create(win, "Multi-line text:"));
     RandyWidgetId textedit = randy_textedit_create(win,
         "Line 1\nLine 2\nLine 3", false);
@@ -314,6 +322,7 @@ int main(void) {
     /* Values */
     randy_slider_set_callback(win, slider, on_value, &demo);
     randy_spinbox_set_callback(win, spin,  on_value, &demo);
+    randy_epoch_set_callback(win, epoch, on_value, &demo);
     randy_listbox_set_callback(win, listbox, on_value, &demo);
 
     /* === Event loop ================================================= */

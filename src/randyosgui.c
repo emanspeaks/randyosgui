@@ -111,6 +111,7 @@ void widget_set_default_size_hints(Widget* w) {
         case WIDGET_FIELD_BORDER: w->pref_h = RANDY_FIELD_BORDER_HEIGHT; break;
         case WIDGET_STATUS_FIELD: w->pref_h = RANDY_STATUS_FIELD_HEIGHT; break;
         case WIDGET_SUNKEN_PANEL: w->pref_h = RANDY_SUNKEN_PANEL_HEIGHT; break;
+        case WIDGET_EPOCH:        w->pref_h = g_style.epoch_height; break;
         case WIDGET_VBOX:
             w->size_policy_h = SIZE_GROW;
             w->size_policy_v = SIZE_FIT;

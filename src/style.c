@@ -93,6 +93,7 @@ static void style_set_defaults_impl(RandyStyle* s) {
     s->listbox_height         = 80;
     s->image_default_size     = 64;
     s->tooltip_height         = 20;
+    s->epoch_height            = 45;
     s->accordion_header_height = 22;
     s->scroll_area_height     = 100;
     s->stacked_height         = 120;
